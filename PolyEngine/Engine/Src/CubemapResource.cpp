@@ -8,7 +8,13 @@ using namespace Poly;
 
 CubemapResource::CubemapResource(const Dynarray<String> paths)
 {
-	ASSERTE(paths.GetSize() == 6, "CubemapResource::CubemapResource parths need to have 6 elements");
+	State = paths.GetSize() == 6 ? eResourceState::VALID : eResourceState::INVALID;
+	if (State == eResourceState::INVALID)
+	{
+		gConsole.LogWarning("CubemapResource::CubemapResource parths need to have 6 elements");
+		return;
+	}
+
 	gConsole.LogInfo("CubemapResource::CubemapResource path:{}", paths[0]);
 
 	Images.Reserve(6);
@@ -24,6 +30,8 @@ CubemapResource::CubemapResource(const Dynarray<String> paths)
 	{
 		TextureProxy->SetContent((unsigned int)i, Images[i]);
 	}
+	
+	State = eResourceState::VALID;
 }
 
 unsigned char* CubemapResource::LoadImage(const String& path)
@@ -35,16 +43,19 @@ unsigned char* CubemapResource::LoadImage(const String& path)
 	int fileWidth;
 	int fileHeight;
 	image = SOIL_load_image(path.GetCStr(), &fileWidth, &fileHeight, &fileChannels, SOIL_LOAD_RGB);
+	
 	if (image == nullptr)
 	{
-		throw ResourceLoadFailedException();
+		State = eResourceState::INVALID;
+		gConsole.LogWarning("CubemapResource::LoadImage failed! path:{}", path);
 	}
+	else
+	{
+		gConsole.LogInfo("CubemapResource::LoadImage {}x{}:{} path:{}", fileWidth, fileHeight, fileChannels, path);
 
-	gConsole.LogInfo("CubemapResource::LoadImage {}x{}:{} path:{}", fileWidth, fileHeight, fileChannels, path);
-
-	Width = std::max(Width, fileWidth);
-	Height = std::max(Height, fileHeight);
-
+		Width = std::max(Width, fileWidth);
+		Height = std::max(Height, fileHeight);
+	}
 	return image;
 }
 

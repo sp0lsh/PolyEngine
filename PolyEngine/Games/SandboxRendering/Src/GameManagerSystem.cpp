@@ -53,6 +53,7 @@ void GameManagerSystem::CreateScene(World* world)
 	};
 
 	DeferredTaskSystem::AddWorldComponentImmediate<SkyboxWorldComponent>(world, stormydays);
+	// DeferredTaskSystem::AddWorldComponentImmediate<SkyboxWorldComponent>(world, "Panoramas/panorama.jpg");
 
 	world->GetWorldComponent<AmbientLightWorldComponent>()->SetColor(Color(0.0f, 0.0f, 0.0f));
 	world->GetWorldComponent<AmbientLightWorldComponent>()->SetIntensity(0.0f);

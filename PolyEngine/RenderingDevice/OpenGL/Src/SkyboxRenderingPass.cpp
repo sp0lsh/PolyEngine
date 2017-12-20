@@ -32,6 +32,41 @@ void SkyboxRenderingPass::OnRun(World* world, const CameraComponent* camera, con
 
 void SkyboxRenderingPass::RenderSkybox(const CameraComponent* camera, const SkyboxWorldComponent* SkyboxWorldCmp)
 {
+	// if (SkyboxWorldCmp->GetCubemap().GetState() != eResourceState::VALID
+	// 	&& SkyboxWorldCmp->GetPanorama().GetState() != eResourceState::VALID)
+	// {
+	// 	gConsole.LogWarning("SkyboxRenderingPass::RenderSkybox: Cubemap and Panorama both have invealid resources, aborting!");
+	// 	return;
+	// }
+
+	GLuint CubemapID = 0;
+	GLuint PanoramaID = 0;
+
+	switch (SkyboxWorldCmp->GetSkyboxType())
+	{
+		case eSkyboxType::CUBEMAP:
+			GetProgram().BindProgram(); // Cubemap
+
+			CubemapID = static_cast<const GLCubemapDeviceProxy*>(SkyboxWorldCmp->GetCubemap().GetTextureProxy())->GetTextureID();
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapID);
+			break;
+		
+		case eSkyboxType::PANORAMA:
+			GetProgram().BindProgram(); // Texture
+
+			// TextureID = static_cast<const GLTextureDeviceProxy*>(SkyboxWorldCmp->GetPanorama().GetTextureProxy())->GetTextureID();
+
+			// glActiveTexture(GL_TEXTURE0);
+			// glBindTexture(GL_TEXTURE_2D, TextureID);
+			break;
+
+		default:
+			ASSERTE(false, "SkyboxRenderingPass::RenderSkybox uknown eSkyboxType");
+			break;
+	}
+
 	const Matrix projection = camera->GetProjectionMatrix();
 	Matrix modelView = Matrix(camera->GetModelViewMatrix());
 	// center cube in view space by setting translation to 0 for x, y and z. SetTranslation resets Matrix to identity
@@ -40,25 +75,19 @@ void SkyboxRenderingPass::RenderSkybox(const CameraComponent* camera, const Skyb
 	modelView.Data[11] = 0.0f;
 
 	Matrix mvp = projection * modelView;
-
-	GetProgram().BindProgram();
 	GetProgram().SetUniform("uMVP", mvp);
-
-	GLuint CubemapID = static_cast<const GLCubemapDeviceProxy*>(SkyboxWorldCmp->GetCubemap().GetTextureProxy())->GetTextureID();
 
 	glDepthMask(GL_FALSE);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	glDepthFunc(GL_LEQUAL);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapID);
-
 	glBindVertexArray(Cube->VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LESS);

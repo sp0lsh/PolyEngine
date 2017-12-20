@@ -57,7 +57,7 @@ void UnlitRenderingPass::OnRun(World* world, const CameraComponent* camera, cons
 			const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
 			glBindVertexArray(meshProxy->GetVAO());
 
-			const Poly::TextureResource* DiffuseTexture = subMesh->GetMeshData().GetDiffTexture();
+			const TextureResource* DiffuseTexture = subMesh->GetMeshData().GetDiffTexture();
 			GLuint TextureID = DiffuseTexture == nullptr
 				? FallbackWhiteTexture
 				: static_cast<const GLTextureDeviceProxy*>(DiffuseTexture->GetTextureProxy())->GetTextureID();

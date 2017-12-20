@@ -8,6 +8,13 @@
 
 namespace Poly
 {
+	enum class eResourceState
+	{
+		VALID,
+		INVALID,
+		_COUNT
+	};
+
 	//------------------------------------------------------------------------------
 	class ENGINE_DLLEXPORT ResourceLoadFailedException : public BaseObject<>, public std::exception
 	{
@@ -20,6 +27,7 @@ namespace Poly
 	{
 	public:
 		const String& GetPath() const { return Path; }
+		const eResourceState GetState() const { return State; }
 
 		ResourceBase() = default;
 		ResourceBase(const ResourceBase&) = delete;
@@ -27,6 +35,8 @@ namespace Poly
 
 	protected:
 		virtual ~ResourceBase() {}
+
+		eResourceState State;
 
 	private:
 		String Path;
