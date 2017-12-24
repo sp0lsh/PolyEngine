@@ -13,6 +13,7 @@ set(POLYGLDEVICE_SRCS
 	Src/GLTextureDeviceProxy.cpp
 	Src/GLWorldRendering.cpp
 	Src/PostprocessRenderingPass.cpp
+	Src/InstancedMeshRenderingPass.cpp
 	Src/PostprocessQuad.cpp
 	Src/RenderingPassBase.cpp
 	Src/Text2DRenderingPass.cpp
@@ -31,6 +32,7 @@ set(POLYGLDEVICE_H_FOR_IDE
 	Src/GLTextureDeviceProxy.hpp
 	Src/GLUtils.hpp
 	Src/PostprocessRenderingPass.hpp
+	Src/InstancedMeshRenderingPass.hpp
 	Src/PostprocessQuad.hpp
 	Src/RenderingPassBase.hpp
 	Src/Text2DRenderingPass.hpp
