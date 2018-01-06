@@ -2,10 +2,10 @@
 
 #include "SkyboxWorldComponent.hpp"
 
-Poly::SkyboxWorldComponent::SkyboxWorldComponent(const Dynarray<String> cubemapPath)
-	: Type(eSkyboxType::CUBEMAP), Cubemap(cubemapPath) /*, Panorama("") */
+Poly::SkyboxWorldComponent::SkyboxWorldComponent(const EnumArray<String, eCubemapSide> cubemapPath)
+	: Cubemap(cubemapPath)
 {
-	gConsole.LogInfo("SkyboxWorldComponent::SkyboxWorldComponent cubemapPath: {}", cubemapPath[0]);
+	gConsole.LogInfo("SkyboxWorldComponent::SkyboxWorldComponent cubemapPath: {}", cubemapPath[eCubemapSide::LEFT]);
 }
 
 // Poly::SkyboxWorldComponent::SkyboxWorldComponent(const String panoramaPath)
