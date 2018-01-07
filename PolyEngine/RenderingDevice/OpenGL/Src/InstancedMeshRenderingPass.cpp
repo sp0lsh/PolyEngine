@@ -15,24 +15,7 @@ using namespace Poly;
 InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* quad)
 	: RenderingPassBase("Shaders/instancedVert.shader", "Shaders/instancedFrag.shader"), Quad(quad)
 {
-	// translation = {}; // init array with zeros
-	int index = 0;
-	float offset = 0.1f;
-	for (int y = -5; y < 5; ++y)
-	{
-		for (int x = -5; x < 5; ++x)
-		{
-			translation[index++] = (float)x / 5.0f + offset;
-			translation[index++] = (float)y / 5.0f + offset;
-		}
-	}
-
 	GetProgram().RegisterUniform("float", "uTime");
-
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * 100, &translation[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	float quadVertices[] = {
 		// positions			// colors
@@ -54,12 +37,64 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	
 	// also set instance data
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	// glEnableVertexAttribArray(2);
+	// glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
+	// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	// glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+
+	// gConsole.LogInfo("InstancedMeshRenderingPass::Ctor sizeof(Matrix): {}, sizeof(GLfloat): {}", sizeof(Matrix), sizeof(GLfloat));
+
+	// fill array with zeros
+	for (int i = 0; i < 16 * 100; ++i)
+	{
+		translation[i] = 0.0f;
+	}
+
+	int index = 0;
+	float offset = 0.1f;
+	for (int y = -0; y < 10; ++y)
+	{
+		for (int x = -0; x < 10; ++x)
+		{
+			// identity
+			translation[index + 0] = 1.0f;
+			translation[index + 5] = 1.0f;
+			translation[index + 9] = 1.0f;
+			translation[index + 15] = 1.0f;
+			// translation
+			translation[index + 3] = (float)x / 5.0f + offset;
+			translation[index + 7] = (float)y / 5.0f + offset;
+			index += 16;
+		}
+	}
+
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16 * 100, &translation[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+
+	// int pos = glGetAttribLocation((GLint)GetProgram().GetProgramHandle(), "aOffset");
+	int pos = 2;
+	int pos1 = pos + 0;
+	int pos2 = pos + 1;
+	int pos3 = pos + 2;
+	int pos4 = pos + 3;
+	glEnableVertexAttribArray(pos1);
+	glEnableVertexAttribArray(pos2);
+	glEnableVertexAttribArray(pos3);
+	glEnableVertexAttribArray(pos4);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 4, (void*)(0));
+	glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 4, (void*)(sizeof(float) * 4));
+	glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 4, (void*)(sizeof(float) * 8));
+	glVertexAttribPointer(pos4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 4, (void*)(sizeof(float) * 12));
+	glVertexAttribDivisor(pos1, 1);
+	glVertexAttribDivisor(pos2, 1);
+	glVertexAttribDivisor(pos3, 1);
+	glVertexAttribDivisor(pos4, 1);
 
 }
 

@@ -25,7 +25,8 @@ namespace Poly
 		unsigned int quadVAO, quadVBO;
 		unsigned int instanceVBO;
 
-		float translation[200];
+		// float translation[200];
+		float translation[16*100];
 
 		const PostprocessQuad* Quad;
 	};
