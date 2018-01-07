@@ -15,7 +15,52 @@ using namespace Poly;
 InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* quad)
 	: RenderingPassBase("Shaders/instancedVert.shader", "Shaders/instancedFrag.shader"), Quad(quad)
 {
+	// translation = {}; // init array with zeros
+	int index = 0;
+	float offset = 0.1f;
+	for (int y = -5; y < 5; ++y)
+	{
+		for (int x = -5; x < 5; ++x)
+		{
+			translation[index++] = (float)x / 5.0f + offset;
+			translation[index++] = (float)y / 5.0f + offset;
+		}
+	}
+
 	GetProgram().RegisterUniform("float", "uTime");
+
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * 100, &translation[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	float quadVertices[] = {
+		// positions   // colors
+		-0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+
+		-0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+	 	 0.5f,  0.5f,  0.0f, 1.0f, 1.0f
+	};
+	
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	// also set instance data
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+
 }
 
 void InstancedMeshRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType passType = ePassType::GLOBAL)
@@ -30,61 +75,11 @@ void InstancedMeshRenderingPass::OnRun(World* world, const CameraComponent* came
 	GetProgram().BindProgram();
 	GetProgram().SetUniform("uTime", Time);
 
-	glBindVertexArray(Quad->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(quadVAO);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100); // 100 triangles of 6 vertices each
 	glBindVertexArray(0);
-	
-	// Render meshes
-	// for (auto componentsTuple : world->IterateComponents<MeshRenderingComponent, TransformComponent>())
-	// {
-	// 	const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
-	// 	TransformComponent* transCmp = std::get<TransformComponent*>(componentsTuple);
-	// 
-	// 	if (passType == ePassType::BY_MATERIAL &&
-	// 		(meshCmp->IsTransparent() || meshCmp->GetShadingModel() != eShadingModel::UNLIT))
-	// 	{
-	// 		continue;
-	// 	}
-	// 
-	// 	Vector objPos = transCmp->GetGlobalTranslation();
-	// 
-	// 	const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
-	// 	Matrix screenTransform = mvp * objTransform;
-	// 	GetProgram().SetUniform("uTransform", objTransform);
-	// 	GetProgram().SetUniform("uMVPTransform", screenTransform);
-	// 	
-	// 	if (passType == ePassType::BY_MATERIAL)
-	// 	{
-	// 		glPolygonMode(GL_FRONT_AND_BACK, meshCmp->GetIsWireframe() ? GL_LINE : GL_FILL);
-	// 	}
-	// 
-	// 	int i = 0;
-	// 	for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
-	// 	{
-	// 		PhongMaterial material = meshCmp->GetMaterial(i);
-	// 		GetProgram().SetUniform("uColor", material.DiffuseColor);
-	// 
-	// 		const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
-	// 		glBindVertexArray(meshProxy->GetVAO());
-	// 
-	// 		const Poly::TextureResource* DiffuseTexture = subMesh->GetMeshData().GetDiffTexture();
-	// 		GLuint TextureID = DiffuseTexture == nullptr
-	// 			? FallbackWhiteTexture
-	// 			: static_cast<const GLTextureDeviceProxy*>(DiffuseTexture->GetTextureProxy())->GetTextureID();
-	// 
-	// 		glActiveTexture(GL_TEXTURE0);
-	// 		glBindTexture(GL_TEXTURE_2D, TextureID);
-	// 
-	// 		glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetMeshData().GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
-	// 		glBindTexture(GL_TEXTURE_2D, 0);
-	// 		glBindVertexArray(0);
-	// 
-	// 		++i;
-	// 	}
-	// 	
-	// 	if (passType == ePassType::BY_MATERIAL)
-	// 	{
-	// 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	// 	}
-	// }
+
+	// glBindVertexArray(VAO);
+	// glDrawArrays(GL_TRIANGLES, 0, 6);
+	// glBindVertexArray(0);
 }
