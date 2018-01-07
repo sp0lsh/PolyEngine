@@ -35,14 +35,14 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	float quadVertices[] = {
-		// positions   // colors
-		-0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-
-		-0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-	 	 0.5f,  0.5f,  0.0f, 1.0f, 1.0f
+		// positions			// colors
+		-1.0f,  1.0f, 0.0f,		1.0f, 0.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f,
+					  
+		-1.0f,  1.0f, 0.0f,		1.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 0.0f,
+	 	 1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 1.0f
 	};
 	
 	glGenVertexArrays(1, &quadVAO);
@@ -51,9 +51,9 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	// also set instance data
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
