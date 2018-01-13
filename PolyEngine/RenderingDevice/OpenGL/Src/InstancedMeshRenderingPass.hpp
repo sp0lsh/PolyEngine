@@ -25,9 +25,14 @@ namespace Poly
 		unsigned int quadVAO, quadVBO;
 		unsigned int instanceVBO;
 
-		// float translation[200];
-		float translation[16*100];
+		static const int instancesLen = 10;
+
+		float instanceTransform[16 * instancesLen];
 
 		const PostprocessQuad* Quad;
+
+		float Random() const;
+
+		float Random(float min, float max) const;
 	};
 }
