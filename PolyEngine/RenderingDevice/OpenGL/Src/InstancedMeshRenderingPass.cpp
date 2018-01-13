@@ -16,6 +16,7 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 	: RenderingPassBase("Shaders/instancedVert.shader", "Shaders/instancedFrag.shader"), Quad(quad)
 {
 	GetProgram().RegisterUniform("float", "uTime");
+	GetProgram().RegisterUniform("mat4", "uMVP");
 
 	float quadVertices[] = {
 		// positions			// colors
@@ -71,7 +72,7 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 
 	// http://sol.gfxile.net/instancing.html
 	// int pos = glGetAttribLocation((GLint)GetProgram().GetProgramHandle(), "aOffset");
-	int pos = 2;
+	int pos = 3;
 	int pos1 = pos + 0;
 	int pos2 = pos + 1;
 	int pos3 = pos + 2;
@@ -93,21 +94,23 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 
 void InstancedMeshRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType passType = ePassType::GLOBAL)
 {
-	gConsole.LogInfo("InstancedMeshRenderingPass::OnRun");
+	// gConsole.LogInfo("InstancedMeshRenderingPass::OnRun");
 	
 	float Time = (float)TimeSystem::GetTimerElapsedTime(world, eEngineTimer::GAMEPLAY);
 
 	GetProgram().BindProgram();
 	const Matrix& mvp = camera->GetMVP();
+	Matrix translation;
+	translation.SetTranslation(Vector(0.0f, 20.0f, 20.0));
+	// const TransformComponent* transCmp = camera->GetSibling<TransformComponent>();
+	// const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
+	// Matrix inst = Matrix(&instanceTransform[0]);
 
-	const TransformComponent* transCmp = camera->GetSibling<TransformComponent>();
-	const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
-	Matrix inst = Matrix(&instanceTransform[0]);
-
-	gConsole.LogInfo("InstancedMeshRenderingPass::OnRun MVP: {}, InstTrans: {}", objTransform, inst);
+	// gConsole.LogInfo("InstancedMeshRenderingPass::OnRun MVP: {}, InstTrans: {}", objTransform, inst);
 
 	GetProgram().BindProgram();
 	GetProgram().SetUniform("uTime", Time);
+	GetProgram().SetUniform("uMVP", mvp*translation);
 
 	glBindVertexArray(quadVAO);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancesLen); // 100 triangles of 6 vertices each
