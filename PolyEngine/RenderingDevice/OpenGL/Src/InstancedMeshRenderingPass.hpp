@@ -23,6 +23,7 @@ namespace Poly
 	private:
 
 		unsigned int quadVAO, quadVBO;
+		
 		unsigned int instanceVBO;
 
 		static const int instancesLen = 10;

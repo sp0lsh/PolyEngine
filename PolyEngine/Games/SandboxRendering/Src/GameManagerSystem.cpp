@@ -7,6 +7,7 @@
 #include <DeferredTaskSystem.hpp>
 #include <TransformComponent.hpp>
 #include <MeshRenderingComponent.hpp>
+#include <ParticleComponent.hpp>
 #include <CameraComponent.hpp>
 #include <FreeFloatMovementComponent.hpp>
 #include <LightSourceComponent.hpp>
@@ -58,11 +59,12 @@ void GameManagerSystem::CreateScene(World* world)
 	GameMgrCmp->KeyDirLight = KeyDirLight;
 
 	// Point Lights
-	CreatePointLight(world, 100.0f);
+	// CreatePointLight(world, 100.0f);
+	// AddPointLights(world, 7);
+	// CreateSpotLight(world, 200.0f);
 
-	AddPointLights(world, 7);
-
-	CreateSpotLight(world, 200.0f);
+	CreateParticles(world, Vector(0.0f, 0.0f, 0.0f), 10);
+	CreateParticles(world, Vector(-10.0f, 0.0f, 0.0f), 20);
 
 	UniqueID Shaderball = DeferredTaskSystem::SpawnEntityImmediate(world);
 	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, Shaderball);
@@ -72,6 +74,7 @@ void GameManagerSystem::CreateScene(World* world)
 	ballMesh->SetMaterial(1, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(0.4f, 0.4f, 0.4f), Color(1.0f, 1.0f, 0.5f), 16.0f));
 	TransformComponent* ballTrans = world->GetComponent<TransformComponent>(Shaderball);
 	ballTrans->SetLocalScale(0.1f);
+	ballTrans->SetLocalTranslation(Vector(20.0f, 0.0f, 0.0f));
 	GameMgrCmp->GameEntities.PushBack(Shaderball);
 
 	UniqueID Ground = DeferredTaskSystem::SpawnEntityImmediate(world);
@@ -84,6 +87,17 @@ void GameManagerSystem::CreateScene(World* world)
 		sponzaMesh->SetMaterial(i, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 8.0f));
 	}
 	GameMgrCmp->GameEntities.PushBack(Ground);
+}
+
+void GameManagerSystem::CreateParticles(World* world, Vector position, int count)
+{
+	UniqueID ParticleID = DeferredTaskSystem::SpawnEntityImmediate(world);
+	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, ParticleID);
+	DeferredTaskSystem::AddComponentImmediate<ParticleComponent>(world, ParticleID, count);
+	ParticleComponent* particle = world->GetComponent<ParticleComponent>(ParticleID);
+	particle->SetCount(count);
+	TransformComponent* particleTrans = world->GetComponent<TransformComponent>(ParticleID);
+	particleTrans->SetLocalTranslation(position);
 }
 
 void GameManagerSystem::Update(World* world)

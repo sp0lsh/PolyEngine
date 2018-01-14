@@ -75,6 +75,13 @@ namespace Poly
 	};
 
 	//------------------------------------------------------------------------------
+	class ENGINE_DLLEXPORT IParticleDeviceProxy : public BaseObject<>
+	{
+	public:
+		virtual void SetContent(const Dynarray<float>& instances) = 0;
+	};
+
+	//------------------------------------------------------------------------------
 	class ENGINE_DLLEXPORT IRenderingDevice : public BaseObject<>
 	{
 	public:

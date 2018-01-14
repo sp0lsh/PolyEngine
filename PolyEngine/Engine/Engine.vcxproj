@@ -189,8 +189,10 @@
     <ClCompile Include="Src\FreeFloatMovementComponent.cpp" />
     <ClCompile Include="Src\DeferredTaskSystem.cpp" />
     <ClCompile Include="Src\InputWorldComponent.cpp" />
+    <ClCompile Include="Src\ParticleComponent.cpp" />
     <ClCompile Include="Src\LightSourceComponent.cpp" />
     <ClCompile Include="Src\OpenALDevice.cpp" />
+    <ClCompile Include="Src\ParticleResource.cpp" />
     <ClCompile Include="Src\Physics2DColliders.cpp" />
     <ClCompile Include="Src\Physics2DSystem.cpp" />
     <ClCompile Include="Src\Physics2DWorldComponent.cpp" />
@@ -243,7 +245,9 @@
     <ClInclude Include="Src\DeferredTaskBase.hpp" />
     <ClInclude Include="Src\DeferredTaskImplementation.hpp" />
     <ClInclude Include="Src\DeferredTaskSystem.hpp" />
+    <ClInclude Include="Src\ParticleComponent.hpp" />
     <ClInclude Include="Src\LightSourceComponent.hpp" />
+    <ClInclude Include="Src\ParticleResource.hpp" />
     <ClInclude Include="Src\Physics2DWorldComponent.hpp" />
     <ClInclude Include="Src\PostprocessSettingsComponent.hpp" />
     <ClInclude Include="Src\Rigidbody2DComponent.hpp" />

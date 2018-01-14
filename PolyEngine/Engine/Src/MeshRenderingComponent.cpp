@@ -12,7 +12,7 @@ MeshRenderingComponent::MeshRenderingComponent(const String& meshPath, eResource
 	Materials.Resize(Mesh->GetSubMeshes().GetSize());
 }
 
-Poly::MeshRenderingComponent::~MeshRenderingComponent()
+MeshRenderingComponent::~MeshRenderingComponent()
 {
 	if (Mesh)
 		ResourceManager<MeshResource>::Release(Mesh);

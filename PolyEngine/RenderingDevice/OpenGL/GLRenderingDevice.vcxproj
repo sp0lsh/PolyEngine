@@ -164,6 +164,7 @@ xcopy /y /d $(SolutionDir)ThirdParty\SDL2\lib\x64\SDL2.dll $(OutDir)</Command>
     <ClInclude Include="Src\DebugNormalsRenderingPass.hpp" />
     <ClInclude Include="Src\DebugNormalsWireframeRenderingPass.hpp" />
     <ClInclude Include="Src\GLMeshDeviceProxy.hpp" />
+    <ClInclude Include="Src\GLParticleDeviceProxy.hpp" />
     <ClInclude Include="Src\GLRenderingDevice.hpp" />
     <ClInclude Include="Src\GLTextFieldBufferDeviceProxy.hpp" />
     <ClInclude Include="Src\GLTextureDeviceProxy.hpp" />
@@ -182,6 +183,7 @@ xcopy /y /d $(SolutionDir)ThirdParty\SDL2\lib\x64\SDL2.dll $(OutDir)</Command>
     <ClCompile Include="Src\DebugNormalsRenderingPass.cpp" />
     <ClCompile Include="Src\DebugNormalsWireframeRenderingPass.cpp" />
     <ClCompile Include="Src\GLMeshDeviceProxy.cpp" />
+    <ClCompile Include="Src\GLParticleDeviceProxy.cpp" />
     <ClCompile Include="Src\GLRenderingDevice.cpp" />
     <ClCompile Include="Src\GLTextFieldBufferDeviceProxy.cpp" />
     <ClCompile Include="Src\GLTextureDeviceProxy.cpp" />

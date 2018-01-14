@@ -8,6 +8,7 @@
 #include <CameraComponent.hpp>
 #include <TransformComponent.hpp>
 #include <MeshRenderingComponent.hpp>
+#include <ParticleComponent.hpp>
 #include <MovementSystem.hpp>
 
 using namespace Poly;
@@ -99,22 +100,51 @@ void InstancedMeshRenderingPass::OnRun(World* world, const CameraComponent* came
 	float Time = (float)TimeSystem::GetTimerElapsedTime(world, eEngineTimer::GAMEPLAY);
 
 	GetProgram().BindProgram();
+	GetProgram().SetUniform("uTime", Time);
 	const Matrix& mvp = camera->GetMVP();
-	Matrix translation;
-	translation.SetTranslation(Vector(0.0f, 20.0f, 20.0));
+	// Matrix translation;
+	// translation.SetTranslation(Vector(0.0f, 0.0f, 0.0));
 	// const TransformComponent* transCmp = camera->GetSibling<TransformComponent>();
 	// const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
 	// Matrix inst = Matrix(&instanceTransform[0]);
 
 	// gConsole.LogInfo("InstancedMeshRenderingPass::OnRun MVP: {}, InstTrans: {}", objTransform, inst);
 
-	GetProgram().BindProgram();
-	GetProgram().SetUniform("uTime", Time);
-	GetProgram().SetUniform("uMVP", mvp*translation);
 
-	glBindVertexArray(quadVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancesLen); // 100 triangles of 6 vertices each
-	glBindVertexArray(0);
+
+	// Render meshes
+	for (auto componentsTuple : world->IterateComponents<ParticleComponent, TransformComponent>())
+	{
+		const ParticleComponent* particleCmp = std::get<ParticleComponent*>(componentsTuple);
+		TransformComponent* transCmp = std::get<TransformComponent*>(componentsTuple);
+		const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
+		Matrix screenTransform = mvp * objTransform;
+
+		Vector objPos = transCmp->GetGlobalTranslation();
+		gConsole.LogInfo("InstancedMeshRenderingPass::OnRun Found Particles, Pos: {}", objPos);
+
+		GetProgram().SetUniform("uMVP", screenTransform);
+		// GetProgram().SetUniform("uMVP", mvp*translation);
+
+		glBindVertexArray(quadVAO);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancesLen); // 100 triangles of 6 vertices each
+		glBindVertexArray(0);
+
+		// const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
+		// glBindVertexArray(meshProxy->GetVAO());
+
+		// const Poly::TextureResource* DiffuseTexture = subMesh->GetMeshData().GetDiffTexture();
+		// GLuint TextureID = DiffuseTexture == nullptr
+		// 	? FallbackWhiteTexture
+		// 	: static_cast<const GLTextureDeviceProxy*>(DiffuseTexture->GetTextureProxy())->GetTextureID();
+		// glActiveTexture(GL_TEXTURE0);
+		// glBindTexture(GL_TEXTURE_2D, TextureID);
+
+		// glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetMeshData().GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
+		// glBindTexture(GL_TEXTURE_2D, 0);
+
+		// glBindVertexArray(0);		
+	}
 }
 
 float InstancedMeshRenderingPass::Random() const
