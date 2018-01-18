@@ -38,7 +38,7 @@ Poly::MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMateria
 	if (mesh->HasPositions()) {
 		MeshData.Positions.Resize(mesh->mNumVertices);
 		for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-			MeshData.Positions[i].X = mesh->mVertices[i].x;
+			MeshData.Positions[i].X  = mesh->mVertices[i].x;
 			MeshData.Positions[i].Y = mesh->mVertices[i].y;
 			MeshData.Positions[i].Z = mesh->mVertices[i].z;
 		}
@@ -47,8 +47,8 @@ Poly::MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMateria
 	if (mesh->HasTextureCoords(0)) {
 		MeshData.TextCoords.Resize(mesh->mNumVertices);
 		for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-			MeshData.TextCoords[i].U = mesh->mTextureCoords[0][i].x;
-			MeshData.TextCoords[i].V = mesh->mTextureCoords[0][i].y;
+			MeshData.TextCoords[i].X = mesh->mTextureCoords[0][i].x;
+			MeshData.TextCoords[i].Y = mesh->mTextureCoords[0][i].y;
 		}
 	}
 
@@ -70,8 +70,10 @@ Poly::MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMateria
 		}
 	}
 
-	MeshProxy = gEngine->GetRenderingDevice()->CreateMesh();
-	MeshProxy->SetContent(MeshData);
+	MeshData.UpdateDeviceProxy();
+
+	// MeshProxy = gEngine->GetRenderingDevice()->CreateMesh();
+	// MeshProxy->SetContent(MeshData);
 
 	gConsole.LogDebug(
 		"Loaded mesh entry: {} with {} vertices, {} faces and parameters: "

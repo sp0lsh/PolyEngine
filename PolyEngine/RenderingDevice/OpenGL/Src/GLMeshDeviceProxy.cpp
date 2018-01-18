@@ -1,5 +1,7 @@
 #include "GLMeshDeviceProxy.hpp"
 #include "GLUtils.hpp"
+#include "Vector.hpp"
+#include "Vector2f.hpp"
 
 using namespace Poly;
 
@@ -45,10 +47,12 @@ void GLMeshDeviceProxy::SetContent(const Mesh& mesh)
 
 	ASSERTE(mesh.HasVertices() && mesh.HasIndicies(), "Meshes that does not contain vertices and faces are not supported yet!");
 
+	// gConsole.LogInfo("GLMeshDeviceProxy::SetContent sizeof(Vector): {} sizeof(Vector2f): {}, ", sizeof(Vector), sizeof(Vector2f));
+
 	if (mesh.HasVertices()) {
 		EnsureVBOCreated(eBufferType::VERTEX_BUFFER);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[eBufferType::VERTEX_BUFFER]);
-		glBufferData(GL_ARRAY_BUFFER, mesh.GetPositions().GetSize() * sizeof(Mesh::Vector3D), mesh.GetPositions().GetData(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, mesh.GetPositions().GetSize() * sizeof(Vector3f), mesh.GetPositions().GetData(), GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(0);
 		CHECK_GL_ERR();
@@ -57,7 +61,7 @@ void GLMeshDeviceProxy::SetContent(const Mesh& mesh)
 	if (mesh.HasTextCoords()) {
 		EnsureVBOCreated(eBufferType::TEXCOORD_BUFFER);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[eBufferType::TEXCOORD_BUFFER]);
-		glBufferData(GL_ARRAY_BUFFER, mesh.GetTextCoords().GetSize() * sizeof(Mesh::TextCoord), mesh.GetTextCoords().GetData(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, mesh.GetTextCoords().GetSize() * sizeof(Vector2f), mesh.GetTextCoords().GetData(), GL_STATIC_DRAW);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(1);
 		CHECK_GL_ERR();
@@ -66,7 +70,7 @@ void GLMeshDeviceProxy::SetContent(const Mesh& mesh)
 	if (mesh.HasNormals()) {
 		EnsureVBOCreated(eBufferType::NORMAL_BUFFER);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[eBufferType::NORMAL_BUFFER]);
-		glBufferData(GL_ARRAY_BUFFER, mesh.GetNormals().GetSize() * sizeof(Mesh::Vector3D), mesh.GetNormals().GetData(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, mesh.GetNormals().GetSize() * sizeof(Vector3f), mesh.GetNormals().GetData(), GL_STATIC_DRAW);
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(2);
 		CHECK_GL_ERR();

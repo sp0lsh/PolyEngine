@@ -3,19 +3,23 @@
 #include <BaseObject.hpp>
 #include <Dynarray.hpp>
 #include <Vector.hpp>
+#include <Vector2f.hpp>
 #include <Color.hpp>
+
+typedef unsigned int GLuint;
 
 namespace Poly
 {
 	class TextureResource;
+	class IMeshDeviceProxy;
 
 	class ENGINE_DLLEXPORT Mesh : public BaseObject<>
 	{
 	public:
 		virtual ~Mesh();
 
-		struct ENGINE_DLLEXPORT Vector3D { float X = 0, Y = 0, Z = 0; };
-		struct ENGINE_DLLEXPORT TextCoord { float U = 0, V = 0; };
+		// struct ENGINE_DLLEXPORT Vector3D { float X = 0, Y = 0, Z = 0; };
+		// struct ENGINE_DLLEXPORT TextCoord { float U = 0, V = 0; };
 		struct ENGINE_DLLEXPORT Material
 		{
 			float SpecularIntensity;
@@ -29,9 +33,9 @@ namespace Poly
 		size_t GetVertexCount() const { return Positions.GetSize(); }
 		size_t GetTriangleCount() const { return Indices.GetSize() / 3; }
 
-		const Dynarray<Vector3D>& GetPositions() const { return Positions; }
-		const Dynarray<Vector3D>& GetNormals() const { return Normals; }
-		const Dynarray<TextCoord>& GetTextCoords() const { return TextCoords; }
+		const Dynarray<Vector3f>& GetPositions() const { return Positions; }
+		const Dynarray<Vector3f>& GetNormals() const { return Normals; }
+		const Dynarray<Vector2f>& GetTextCoords() const { return TextCoords; }
 		const Dynarray<uint32_t>& GetIndicies() const { return Indices; }
 
 		bool HasVertices() const { return Positions.GetSize() != 0; }
@@ -39,13 +43,18 @@ namespace Poly
 		bool HasTextCoords() const { return TextCoords.GetSize() != 0; }
 		bool HasIndicies() const { return Indices.GetSize() != 0; }
 
+		const IMeshDeviceProxy* GetMeshProxy() const { return MeshProxy.get(); }
+		void UpdateDeviceProxy();
+
 	private:
 		Material Mtl;
 		TextureResource* DiffuseTexture;
-		Dynarray<Vector3D> Positions;
-		Dynarray<Vector3D> Normals;
-		Dynarray<TextCoord> TextCoords;
+		Dynarray<Vector3f> Positions;
+		Dynarray<Vector3f> Normals;
+		Dynarray<Vector2f> TextCoords;
 		Dynarray<uint32_t> Indices;
+
+		std::unique_ptr<IMeshDeviceProxy> MeshProxy;
 
 		friend class MeshResource;
 		friend class SubMesh;

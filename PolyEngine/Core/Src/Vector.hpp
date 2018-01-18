@@ -7,8 +7,13 @@
 
 namespace Poly {
 
+	class CORE_DLLEXPORT Vector3f : public BaseObjectLiteralType<> {
+	public:
+		float X, Y, Z;
+	};
+
 	/// <summary>Class representing 3D vector that takes advantage of SIMD (if possible).</summary>
-	class ALIGN_16 CORE_DLLEXPORT Vector : public BaseObject<>{
+	class ALIGN_16 CORE_DLLEXPORT Vector : public BaseObjectLiteralType<>{
 	public:
 		static const Vector ZERO;
 		static const Vector UNIT_X;
