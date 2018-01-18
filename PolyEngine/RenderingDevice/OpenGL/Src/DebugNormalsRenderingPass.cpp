@@ -42,7 +42,7 @@ void DebugNormalsRenderingPass::OnRun(World* world, const CameraComponent* camer
 		glPolygonMode(GL_FRONT_AND_BACK, meshCmp->GetIsWireframe() ? GL_LINE : GL_FILL);
 
 		int i = 0;
-		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
 		{
 			const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
 

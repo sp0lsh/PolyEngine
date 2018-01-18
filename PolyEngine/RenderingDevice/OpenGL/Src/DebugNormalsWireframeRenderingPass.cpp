@@ -34,7 +34,7 @@ void DebugNormalsWireframeRenderingPass::OnRun(World* world, const CameraCompone
 		Matrix mNormalMatrix = (mModelView * objTransform).GetInversed().GetTransposed();
 		GetProgram().SetUniform("u_MVP", MVPTransform);
 		GetProgram().SetUniform("u_normalMatrix4x4", mNormalMatrix);
-		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
 		{
 			const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
 			glBindVertexArray(meshProxy->GetVAO());

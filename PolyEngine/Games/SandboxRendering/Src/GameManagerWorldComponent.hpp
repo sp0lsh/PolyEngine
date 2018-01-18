@@ -21,4 +21,6 @@ public:
 	bool IsDrawingDebugMeshes = true;
 
 	Dynarray<UniqueID> GameEntities;
+
+	Mesh* mesh;
 };

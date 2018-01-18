@@ -9,6 +9,8 @@ namespace Poly {
 
 	class CORE_DLLEXPORT Vector3f : public BaseObjectLiteralType<> {
 	public:
+		constexpr Vector3f() : X(0.f), Y(0.f), Z(0.f) {}
+		constexpr Vector3f(float x, float y, float z) : X(x), Y(y), Z(z) {}
 		float X, Y, Z;
 	};
 

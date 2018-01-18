@@ -64,6 +64,53 @@ void GameManagerSystem::CreateScene(World* world)
 
 	CreateSpotLight(world, 200.0f);
 
+	
+	Dynarray<Vector3f> verts =
+	{
+		{ -1.0f,  1.0f, 0.0f },
+		{  1.0f, -1.0f, 0.0f },
+		{  1.0f,  1.0f, 0.0f },
+
+		{ -1.0f,  1.0f, 0.0f },
+		{ -1.0f, -1.0f, 0.0f },
+		{  1.0f, -1.0f, 0.0f }
+	};
+
+	Dynarray<Vector2f> uv =
+	{
+		{ 1.0f,  0.0f },
+		{ 0.0f,  1.0f },
+		{ 0.0f,  0.0f },
+
+		{ 1.0f,  0.0f },
+		{ 0.0f,  1.0f },
+		{ 0.0f,  1.0f }
+	};
+
+	Dynarray<uint32_t> ind =
+	{
+		0, 1, 2,
+		3, 4, 5
+	};
+
+	gConsole.LogInfo("GameManagerSystem::CrateScene creating mesh");
+	GameMgrCmp->mesh = new Mesh();
+	GameMgrCmp->mesh->SetPositions(verts);
+	GameMgrCmp->mesh->SetTextCoords(uv);
+	GameMgrCmp->mesh->SetIndicies(ind);
+	GameMgrCmp->mesh->UpdateDeviceProxy();
+
+	gConsole.LogInfo("GameManagerSystem::CrateScene creating mesh entity");
+	UniqueID ProcMeshID = DeferredTaskSystem::SpawnEntityImmediate(world);
+	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, ProcMeshID);
+	DeferredTaskSystem::AddComponentImmediate<MeshRenderingComponent>(world, ProcMeshID, GameMgrCmp->mesh);
+	MeshRenderingComponent* ProcMesh = world->GetComponent<MeshRenderingComponent>(ProcMeshID);
+	ProcMesh->SetMaterial(0, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 8.0f));
+	TransformComponent* ProcMeshTrans = world->GetComponent<TransformComponent>(ProcMeshID);
+	// ProcMeshTrans->SetLocalScale(0.1f);
+	GameMgrCmp->GameEntities.PushBack(ProcMeshID);
+	gConsole.LogInfo("GameManagerSystem::CrateScene mesh entity created");
+
 	UniqueID Shaderball = DeferredTaskSystem::SpawnEntityImmediate(world);
 	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, Shaderball);
 	DeferredTaskSystem::AddComponentImmediate<MeshRenderingComponent>(world, Shaderball, "Models/shaderball/PolyEngine_shaderball.fbx", eResourceSource::GAME);
@@ -79,7 +126,7 @@ void GameManagerSystem::CreateScene(World* world)
 	DeferredTaskSystem::AddComponentImmediate<MeshRenderingComponent>(world, Ground, "Models/Sponza/sponza.obj", eResourceSource::GAME);
 	TransformComponent* groundTrans = world->GetComponent<TransformComponent>(Ground);
 	MeshRenderingComponent* sponzaMesh = world->GetComponent<MeshRenderingComponent>(Ground);
-	for (int i = 0; i < sponzaMesh->GetMesh()->GetSubMeshes().GetSize(); ++i)
+	for (int i = 0; i < sponzaMesh->GetMesh()->GetMeshes().GetSize(); ++i)
 	{
 		sponzaMesh->SetMaterial(i, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 8.0f));
 	}

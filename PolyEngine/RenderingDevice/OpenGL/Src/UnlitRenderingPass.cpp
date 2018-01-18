@@ -49,7 +49,7 @@ void UnlitRenderingPass::OnRun(World* world, const CameraComponent* camera, cons
 		}
 
 		int i = 0;
-		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
 		{
 			PhongMaterial material = meshCmp->GetMaterial(i);
 			GetProgram().SetUniform("uColor", material.DiffuseColor);

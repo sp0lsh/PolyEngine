@@ -31,6 +31,8 @@ namespace Poly
 
 		
 		const Material& GetMaterial() const { return Mtl; }
+		void SetMaterial(const Material& value);
+
 		size_t GetVertexCount() const { return Positions.GetSize(); }
 		size_t GetTriangleCount() const { return Indices.GetSize() / 3; }
 
@@ -38,6 +40,11 @@ namespace Poly
 		const Dynarray<Vector3f>& GetNormals() const { return Normals; }
 		const Dynarray<Vector2f>& GetTextCoords() const { return TextCoords; }
 		const Dynarray<uint32_t>& GetIndicies() const { return Indices; }
+
+		void SetPositions(const Dynarray<Vector3f>& values) { Positions = values; }
+		void SetNormals(const Dynarray<Vector3f>& values) { Normals = values; }
+		void SetTextCoords(const Dynarray<Vector2f>& values) { TextCoords = values; }
+		void SetIndicies(const Dynarray<uint32_t>& values) { Indices = values; }
 
 		bool HasVertices() const { return Positions.GetSize() != 0; }
 		bool HasNormals() const { return Normals.GetSize() != 0; }
@@ -55,8 +62,5 @@ namespace Poly
 		Dynarray<uint32_t> Indices;
 
 		std::unique_ptr<IMeshDeviceProxy> MeshProxy;
-
-		friend class MeshResource;
-		friend class SubMesh;
 	};
 }

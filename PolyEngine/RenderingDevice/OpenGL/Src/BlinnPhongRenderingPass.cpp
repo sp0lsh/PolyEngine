@@ -159,7 +159,7 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 		glPolygonMode(GL_FRONT_AND_BACK, meshCmp->GetIsWireframe() ? GL_LINE : GL_FILL);
 
 		int i = 0;
-		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
 		{
 			PhongMaterial material = meshCmp->GetMaterial(i);
 			GetProgram().SetUniform("uMaterial.Ambient", material.AmbientColor);
