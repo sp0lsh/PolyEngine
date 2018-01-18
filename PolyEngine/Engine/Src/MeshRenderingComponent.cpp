@@ -16,6 +16,7 @@ MeshRenderingComponent::MeshRenderingComponent(const String& meshPath, eResource
 MeshRenderingComponent::MeshRenderingComponent(Poly::Mesh* mesh)
 {
 	Mesh = new MeshResource(mesh);
+	Materials.Resize(1);
 }
 
 MeshRenderingComponent::~MeshRenderingComponent()

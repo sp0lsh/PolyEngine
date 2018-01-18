@@ -76,6 +76,17 @@ void GameManagerSystem::CreateScene(World* world)
 		{  1.0f, -1.0f, 0.0f }
 	};
 
+	Dynarray<Vector3f> normals =
+	{
+		{ 0.0f, 0.0f, 1.0f },
+		{ 0.0f, 0.0f, 1.0f },
+		{ 0.0f, 0.0f, 1.0f },
+
+		{ 0.0f, 0.0f, 1.0f },
+		{ 0.0f, 0.0f, 1.0f },
+		{ 0.0f, 0.0f, 1.0f }
+	};
+
 	Dynarray<Vector2f> uv =
 	{
 		{ 1.0f,  0.0f },
@@ -96,17 +107,18 @@ void GameManagerSystem::CreateScene(World* world)
 	gConsole.LogInfo("GameManagerSystem::CrateScene creating mesh");
 	GameMgrCmp->mesh = new Mesh();
 	GameMgrCmp->mesh->SetPositions(verts);
+	// GameMgrCmp->mesh->SetNormals(normals);
 	GameMgrCmp->mesh->SetTextCoords(uv);
 	GameMgrCmp->mesh->SetIndicies(ind);
 	GameMgrCmp->mesh->UpdateDeviceProxy();
 
 	gConsole.LogInfo("GameManagerSystem::CrateScene creating mesh entity");
 	UniqueID ProcMeshID = DeferredTaskSystem::SpawnEntityImmediate(world);
-	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, ProcMeshID);
 	DeferredTaskSystem::AddComponentImmediate<MeshRenderingComponent>(world, ProcMeshID, GameMgrCmp->mesh);
 	MeshRenderingComponent* ProcMesh = world->GetComponent<MeshRenderingComponent>(ProcMeshID);
 	ProcMesh->SetMaterial(0, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 8.0f));
-	TransformComponent* ProcMeshTrans = world->GetComponent<TransformComponent>(ProcMeshID);
+	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, ProcMeshID);
+	// TransformComponent* ProcMeshTrans = world->GetComponent<TransformComponent>(ProcMeshID);
 	// ProcMeshTrans->SetLocalScale(0.1f);
 	GameMgrCmp->GameEntities.PushBack(ProcMeshID);
 	gConsole.LogInfo("GameManagerSystem::CrateScene mesh entity created");
