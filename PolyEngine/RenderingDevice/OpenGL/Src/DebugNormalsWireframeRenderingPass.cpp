@@ -34,11 +34,11 @@ void DebugNormalsWireframeRenderingPass::OnRun(World* world, const CameraCompone
 		Matrix mNormalMatrix = (mModelView * objTransform).GetInversed().GetTransposed();
 		GetProgram().SetUniform("u_MVP", MVPTransform);
 		GetProgram().SetUniform("u_normalMatrix4x4", mNormalMatrix);
-		for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
 		{
 			const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
 			glBindVertexArray(meshProxy->GetVAO());
-			glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetMeshData().GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
+			glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
 			glBindVertexArray(0);
 		}
 	}

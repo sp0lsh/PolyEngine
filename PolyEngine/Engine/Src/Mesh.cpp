@@ -6,6 +6,12 @@
 
 Poly::Mesh::~Mesh()
 {
-	if (DiffuseTexture)
-		ResourceManager<TextureResource>::Release(DiffuseTexture);
+	if (Mtl.DiffuseTexture)
+		ResourceManager<TextureResource>::Release(Mtl.DiffuseTexture);
+}
+
+void Poly::Mesh::UpdateDeviceProxy()
+{
+	MeshProxy = gEngine->GetRenderingDevice()->CreateMesh();
+	MeshProxy->SetContent(*this);
 }

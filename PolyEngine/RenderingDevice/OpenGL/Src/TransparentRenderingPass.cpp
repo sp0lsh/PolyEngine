@@ -66,7 +66,7 @@ void TransparentRenderingPass::OnRun(World* world, const CameraComponent* camera
 		GetProgram().SetUniform("uMVPTransform", screenTransform);
 		
 		int i = 0;
-		for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
 		{
 			GetProgram().SetUniform("uBaseColor", meshCmp->GetMaterial(i).DiffuseColor);
 			UNUSED(subMesh);

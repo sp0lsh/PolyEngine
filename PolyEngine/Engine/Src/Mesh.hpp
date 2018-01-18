@@ -25,11 +25,12 @@ namespace Poly
 			float SpecularIntensity;
 			float SpecularPower;
 			Color SpecularColor;
+			TextureResource* DiffuseTexture;
+			const TextureResource* GetDiffTexture() const { return DiffuseTexture; }
 		};
 
 		
-		const TextureResource* GetDiffTexture() const { return DiffuseTexture; }
-		const Material& GetMaterial() { return Mtl; }
+		const Material& GetMaterial() const { return Mtl; }
 		size_t GetVertexCount() const { return Positions.GetSize(); }
 		size_t GetTriangleCount() const { return Indices.GetSize() / 3; }
 
@@ -48,7 +49,6 @@ namespace Poly
 
 	private:
 		Material Mtl;
-		TextureResource* DiffuseTexture;
 		Dynarray<Vector3f> Positions;
 		Dynarray<Vector3f> Normals;
 		Dynarray<Vector2f> TextCoords;

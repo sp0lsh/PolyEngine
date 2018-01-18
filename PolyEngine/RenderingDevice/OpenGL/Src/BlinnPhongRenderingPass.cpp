@@ -159,7 +159,7 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 		glPolygonMode(GL_FRONT_AND_BACK, meshCmp->GetIsWireframe() ? GL_LINE : GL_FILL);
 
 		int i = 0;
-		for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
 		{
 			PhongMaterial material = meshCmp->GetMaterial(i);
 			GetProgram().SetUniform("uMaterial.Ambient", material.AmbientColor);
@@ -170,7 +170,7 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 			const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
 			glBindVertexArray(meshProxy->GetVAO());
 
-			const Poly::TextureResource* DiffuseTexture = subMesh->GetMeshData().GetDiffTexture();
+			const Poly::TextureResource* DiffuseTexture = subMesh->GetMaterial().GetDiffTexture();
 			GLuint TextureID = DiffuseTexture == nullptr
 				? FallbackWhiteTexture
 				: static_cast<const GLTextureDeviceProxy*>(DiffuseTexture->GetTextureProxy())->GetTextureID();
@@ -178,7 +178,7 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, TextureID);
 
-			glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetMeshData().GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
+			glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glBindVertexArray(0);
 

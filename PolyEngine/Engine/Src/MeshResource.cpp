@@ -21,71 +21,70 @@ MeshResource::MeshResource(const String& path)
 
 	gConsole.LogDebug("Loading model {} sucessfull.", path);
 	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-		SubMeshes.PushBack(new SubMesh(path, scene->mMeshes[i], scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]));
+		SubMeshes.PushBack(LoadMesh(path, scene->mMeshes[i], scene->mMaterials[scene->mMeshes[i]->mMaterialIndex]));
 	}
 }
 
 Poly::MeshResource::~MeshResource()
 {
-	for (SubMesh* subMesh : SubMeshes)
+	for (Mesh* subMesh : SubMeshes)
 	{
 		delete subMesh;
 	}
 }
 
-Poly::MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMaterial* material)
+Mesh* Poly::MeshResource::LoadMesh(const String& path, aiMesh* rawMesh, aiMaterial* rawMaterial)
 {
-	if (mesh->HasPositions()) {
-		MeshData.Positions.Resize(mesh->mNumVertices);
-		for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-			MeshData.Positions[i].X  = mesh->mVertices[i].x;
-			MeshData.Positions[i].Y = mesh->mVertices[i].y;
-			MeshData.Positions[i].Z = mesh->mVertices[i].z;
+	Mesh* MeshData = new Mesh();
+
+	if (rawMesh->HasPositions()) {
+		MeshData->Positions.Resize(rawMesh->mNumVertices);
+		for (unsigned int i = 0; i < rawMesh->mNumVertices; ++i) {
+			MeshData->Positions[i].X  = rawMesh->mVertices[i].x;
+			MeshData->Positions[i].Y = rawMesh->mVertices[i].y;
+			MeshData->Positions[i].Z = rawMesh->mVertices[i].z;
 		}
 	}
 
-	if (mesh->HasTextureCoords(0)) {
-		MeshData.TextCoords.Resize(mesh->mNumVertices);
-		for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-			MeshData.TextCoords[i].X = mesh->mTextureCoords[0][i].x;
-			MeshData.TextCoords[i].Y = mesh->mTextureCoords[0][i].y;
+	if (rawMesh->HasTextureCoords(0)) {
+		MeshData->TextCoords.Resize(rawMesh->mNumVertices);
+		for (unsigned int i = 0; i < rawMesh->mNumVertices; ++i) {
+			MeshData->TextCoords[i].X = rawMesh->mTextureCoords[0][i].x;
+			MeshData->TextCoords[i].Y = rawMesh->mTextureCoords[0][i].y;
 		}
 	}
 
-	if (mesh->HasNormals()) {
-		MeshData.Normals.Resize(mesh->mNumVertices);
-		for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-			MeshData.Normals[i].X = mesh->mNormals[i].x;
-			MeshData.Normals[i].Y = mesh->mNormals[i].y;
-			MeshData.Normals[i].Z = mesh->mNormals[i].z;
+	if (rawMesh->HasNormals()) {
+		MeshData->Normals.Resize(rawMesh->mNumVertices);
+		for (unsigned int i = 0; i < rawMesh->mNumVertices; ++i) {
+			MeshData->Normals[i].X = rawMesh->mNormals[i].x;
+			MeshData->Normals[i].Y = rawMesh->mNormals[i].y;
+			MeshData->Normals[i].Z = rawMesh->mNormals[i].z;
 		}
 	}
 
-	if (mesh->HasFaces()) {
-		MeshData.Indices.Resize(mesh->mNumFaces * 3);
-		for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
-			MeshData.Indices[i * 3] = mesh->mFaces[i].mIndices[0];
-			MeshData.Indices[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
-			MeshData.Indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
+	if (rawMesh->HasFaces()) {
+		MeshData->Indices.Resize(rawMesh->mNumFaces * 3);
+		for (unsigned int i = 0; i < rawMesh->mNumFaces; ++i) {
+			MeshData->Indices[i * 3] = rawMesh->mFaces[i].mIndices[0];
+			MeshData->Indices[i * 3 + 1] = rawMesh->mFaces[i].mIndices[1];
+			MeshData->Indices[i * 3 + 2] = rawMesh->mFaces[i].mIndices[2];
 		}
 	}
 
-	MeshData.UpdateDeviceProxy();
-
-	// MeshProxy = gEngine->GetRenderingDevice()->CreateMesh();
-	// MeshProxy->SetContent(MeshData);
+	MeshData->UpdateDeviceProxy();
 
 	gConsole.LogDebug(
 		"Loaded mesh entry: {} with {} vertices, {} faces and parameters: "
 		"pos[{}], tex_coord[{}], norm[{}], faces[{}]",
-		mesh->mName.C_Str(), MeshData.Positions.GetSize(), mesh->mNumFaces,
-		mesh->HasPositions() ? "on" : "off",
-		mesh->HasTextureCoords(0) ? "on" : "off",
-		mesh->HasNormals() ? "on" : "off", mesh->HasFaces() ? "on" : "off");
+		rawMesh->mName.C_Str(), MeshData->Positions.GetSize(), rawMesh->mNumFaces,
+		rawMesh->HasPositions() ? "on" : "off",
+		rawMesh->HasTextureCoords(0) ? "on" : "off",
+		rawMesh->HasNormals() ? "on" : "off", rawMesh->HasFaces() ? "on" : "off");
 
 	// Material loading
 	aiString texPath;
-	if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS)
+	if (rawMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS)
 	{
 		//TODO load textures, this requires Path class
 		// temporary code for extracting path
@@ -96,33 +95,36 @@ Poly::MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMateria
 		String textPath(fullPath.c_str());
 		// end temporary code for extracting path
 
-		MeshData.DiffuseTexture = ResourceManager<TextureResource>::Load(textPath, eResourceSource::NONE);
-		if (!MeshData.DiffuseTexture) {
+		MeshData->Mtl.DiffuseTexture = ResourceManager<TextureResource>::Load(textPath, eResourceSource::NONE);
+		if (!MeshData->Mtl.DiffuseTexture) {
 			gConsole.LogError("Failed to load diffuse texture: {}", fullPath);
 		} else {
 			gConsole.LogDebug("Succeded to load diffuse texture: {}", fullPath);
 		}
 	} else {
 		gConsole.LogError("Failed to load diffuse texture for material: {}", path);
-		MeshData.DiffuseTexture = nullptr;
+		MeshData->Mtl.DiffuseTexture = nullptr;
 	}
 
 	// Material params loading
-	if (material->Get(AI_MATKEY_SHININESS_STRENGTH, MeshData.Mtl.SpecularIntensity) != AI_SUCCESS) {
-		MeshData.Mtl.SpecularIntensity = 0.0f;
+	if (rawMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, MeshData->Mtl.SpecularIntensity) != AI_SUCCESS) {
+		MeshData->Mtl.SpecularIntensity = 0.0f;
 		gConsole.LogError("Error reading specular intensity in {}", path);
 	}
-	if (material->Get(AI_MATKEY_SHININESS, MeshData.Mtl.SpecularPower) != AI_SUCCESS) {
-		MeshData.Mtl.SpecularPower = 0.0f;
+	if (rawMaterial->Get(AI_MATKEY_SHININESS, MeshData->Mtl.SpecularPower) != AI_SUCCESS) {
+		MeshData->Mtl.SpecularPower = 0.0f;
 		gConsole.LogError("Error reading specular power in {}", path);
 	}
 	aiColor3D color;
-	material->Get(AI_MATKEY_COLOR_SPECULAR, color);
-	MeshData.Mtl.SpecularColor = Color(color.r, color.b, color.g);
+	rawMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color);
+	MeshData->Mtl.SpecularColor = Color(color.r, color.b, color.g);
 
-	gConsole.LogDebug("Specular params: {}, {}, [{},{},{}]", MeshData.Mtl.SpecularIntensity,
-		MeshData.Mtl.SpecularPower, MeshData.Mtl.SpecularColor.R, MeshData.Mtl.SpecularColor.G,
-		MeshData.Mtl.SpecularColor.B);
+	gConsole.LogDebug("Specular params: {}, {}, [{},{},{}]",
+		MeshData->Mtl.SpecularIntensity,
+		MeshData->Mtl.SpecularPower,
+		MeshData->Mtl.SpecularColor.R,
+		MeshData->Mtl.SpecularColor.G,
+		MeshData->Mtl.SpecularColor.B);
 
-
+	return MeshData;
 }
