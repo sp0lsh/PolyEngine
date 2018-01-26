@@ -14,6 +14,7 @@ namespace Poly
 			TEXCOORD_BUFFER,
 			NORMAL_BUFFER,
 			INDEX_BUFFER,
+			INSTANCE_BUFFER,
 			_COUNT
 		};
 
@@ -24,6 +25,7 @@ namespace Poly
 		void SetContent(const Mesh& mesh);
 
 		GLuint GetVAO() const { return VAO; }
+
 	private:
 		void EnsureVBOCreated(eBufferType type);
 

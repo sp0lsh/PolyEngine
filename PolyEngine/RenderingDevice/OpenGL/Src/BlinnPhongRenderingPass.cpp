@@ -141,7 +141,7 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 	for (const auto& componentsTuple : world->IterateComponents<MeshRenderingComponent, TransformComponent>())
 	{
 		const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
-		TransformComponent* transCmp = std::get<TransformComponent*>(componentsTuple);
+		const TransformComponent* transCmp = std::get<TransformComponent*>(componentsTuple);
 
 		if ( passType == ePassType::BY_MATERIAL &&
 			(meshCmp->IsTransparent() || meshCmp->GetShadingModel() != eShadingModel::LIT))
@@ -161,6 +161,11 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 		int i = 0;
 		for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
 		{
+			if (subMesh->HasInstances())
+			{
+				continue;
+			}
+
 			PhongMaterial material = meshCmp->GetMaterial(i);
 			GetProgram().SetUniform("uMaterial.Ambient", material.AmbientColor);
 			GetProgram().SetUniform("uMaterial.Diffuse", material.DiffuseColor);

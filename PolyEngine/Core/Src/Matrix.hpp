@@ -18,7 +18,7 @@ namespace Poly
 	};
 
 	/// <summary>Class representing 4x4 matrix in row-major order. It takes advantage of SIMD (if possible).</summary>
-	class ALIGN_16 CORE_DLLEXPORT Matrix : public BaseObject<>{
+	class ALIGN_16 CORE_DLLEXPORT Matrix : public BaseObjectLiteralType<>{
 	public:
 		Matrix();
 		Matrix(const float data[16], bool rowOrder = true);

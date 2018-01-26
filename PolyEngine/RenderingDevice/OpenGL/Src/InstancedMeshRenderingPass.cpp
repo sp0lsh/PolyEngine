@@ -20,13 +20,13 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 
 	float quadVertices[] = {
 		// positions			// colors
-		-1.0f,  1.0f, 0.0f,		1.0f, 0.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f,
+		-1.0f,  1.0f, 0.0f,		1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,		0.0f, 1.0f,
+		 1.0f,  1.0f, 0.0f,		0.0f, 0.0f,
 					  
-		-1.0f,  1.0f, 0.0f,		1.0f, 0.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 0.0f,
-	 	 1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 1.0f
+		-1.0f,  1.0f, 0.0f,		1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,		0.0f, 1.0f,
+	 	 1.0f, -1.0f, 0.0f,		0.0f, 1.0f
 	};
 	
 	glGenVertexArrays(1, &quadVAO);
@@ -35,9 +35,9 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	
 	// gConsole.LogInfo("InstancedMeshRenderingPass::Ctor sizeof(Matrix): {}, sizeof(GLfloat): {}", sizeof(Matrix), sizeof(GLfloat));
 
@@ -95,26 +95,74 @@ InstancedMeshRenderingPass::InstancedMeshRenderingPass(const PostprocessQuad* qu
 void InstancedMeshRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType passType = ePassType::GLOBAL)
 {
 	// gConsole.LogInfo("InstancedMeshRenderingPass::OnRun");
-	
 	float Time = (float)TimeSystem::GetTimerElapsedTime(world, eEngineTimer::GAMEPLAY);
 
 	GetProgram().BindProgram();
 	const Matrix& mvp = camera->GetMVP();
-	Matrix translation;
-	translation.SetTranslation(Vector(0.0f, 20.0f, 20.0));
+	// Matrix translation;
+	// translation.SetTranslation(Vector(0.0f, 5.0f, 5.0));
 	// const TransformComponent* transCmp = camera->GetSibling<TransformComponent>();
 	// const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
 	// Matrix inst = Matrix(&instanceTransform[0]);
 
 	// gConsole.LogInfo("InstancedMeshRenderingPass::OnRun MVP: {}, InstTrans: {}", objTransform, inst);
 
-	GetProgram().BindProgram();
-	GetProgram().SetUniform("uTime", Time);
-	GetProgram().SetUniform("uMVP", mvp*translation);
+	// GetProgram().BindProgram();
+	// GetProgram().SetUniform("uMVP", mvp*translation);
+	// 
+	// glBindVertexArray(quadVAO);
+	// glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancesLen); // 100 triangles of 6 vertices each
+	// glBindVertexArray(0);
 
-	glBindVertexArray(quadVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancesLen); // 100 triangles of 6 vertices each
-	glBindVertexArray(0);
+	// // Render meshes
+	// for (auto componentsTuple : world->IterateComponents<MeshRenderingComponent, TransformComponent>())
+	// {
+	// 	const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
+	// 	for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
+	// 	{
+	// 		// const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
+	// 		if (subMesh->HasInstances()) {
+	// 			gConsole.LogInfo("InstancedMeshRenderingPass::OnRun instances: {}", subMesh->GetInstances().GetSize());
+	// 		}
+	// 	}
+	// }
+	glDisable(GL_CULL_FACE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Render meshes
+	for (auto componentsTuple : world->IterateComponents<MeshRenderingComponent, TransformComponent>())
+	{
+		const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
+		const TransformComponent* transCmp = std::get<TransformComponent*>(componentsTuple);
+
+//		Vector objPos = transCmp->GetGlobalTranslation();
+
+		const Matrix& objTransform = transCmp->GetGlobalTransformationMatrix();
+		Matrix screenTransform = mvp * objTransform;
+		// GetProgram().SetUniform("uTransform", objTransform);
+		GetProgram().SetUniform("uTime", Time);
+		GetProgram().SetUniform("uMVP", screenTransform);
+
+
+		for (const Mesh* subMesh : meshCmp->GetMesh()->GetMeshes())
+		{
+			if (subMesh->HasInstances()) {
+				gConsole.LogInfo("InstancedMeshRenderingPass::OnRun instances: {}", subMesh->GetInstancesCount());
+				const GLMeshDeviceProxy* meshProxy = static_cast<const GLMeshDeviceProxy*>(subMesh->GetMeshProxy());
+				glBindVertexArray(meshProxy->GetVAO());
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, FallbackWhiteTexture);
+
+				glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)subMesh->GetVertexCount(), (GLsizei)subMesh->GetInstancesCount());
+				// glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
+				glBindTexture(GL_TEXTURE_2D, 0);
+				glBindVertexArray(0);
+			}
+		}
+	}
+	
+	glEnable(GL_CULL_FACE);
 }
 
 float InstancedMeshRenderingPass::Random() const

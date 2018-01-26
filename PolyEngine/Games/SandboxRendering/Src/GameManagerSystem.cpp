@@ -58,12 +58,14 @@ void GameManagerSystem::CreateScene(World* world)
 	GameMgrCmp->KeyDirLight = KeyDirLight;
 
 	// Point Lights
-	CreatePointLight(world, 100.0f);
+	// CreatePointLight(world, 100.0f);
+	// 
+	// AddPointLights(world, 7);
+	// 
+	// CreateSpotLight(world, 200.0f);
 
-	AddPointLights(world, 7);
-
-	CreateSpotLight(world, 200.0f);
-
+	gConsole.LogInfo("GLMeshDeviceProxy::SetContent sizeof(Vector2f): {}, sizeof(Vector3f): {}, sizeof(Vector): {}, sizeof(Matrix): {}",
+		sizeof(Vector2f), sizeof(Vector3f), sizeof(Vector), sizeof(Matrix));
 	
 	Dynarray<Vector3f> verts =
 	{
@@ -104,12 +106,63 @@ void GameManagerSystem::CreateScene(World* world)
 		3, 4, 5
 	};
 
+	float data0[] = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		2.0f, 0.0f, 0.0f, 1.0f
+	};
+
+	// float data1[] = {
+	// 	1.0f, 0.0f, 0.0f, 0.0f,
+	// 	0.0f, 1.0f, 0.0f, 0.0f,
+	// 	0.0f, 0.0f, 1.0f, 0.0f,
+	// 	1.0f, 0.0f, 0.0f, 1.0f
+	// };
+
+	// float data2[] = {
+	// 	1.0f, 0.0f, 0.0f, 0.0f,
+	// 	0.0f, 1.0f, 0.0f, 0.0f,
+	// 	0.0f, 0.0f, 1.0f, 0.0f,
+	// 	0.0f, 1.0f, 0.0f, 1.0f
+	// };
+	// 
+	// float data3[] = {
+	// 	1.0f, 0.0f, 0.0f, 0.0f,
+	// 	0.0f, 1.0f, 0.0f, 0.0f,
+	// 	0.0f, 0.0f, 1.0f, 0.0f,
+	// 	0.0f, 0.0f, 1.0f, 1.0f
+	// };
+	// 
+	// float data4[] = {
+	// 	1.0f, 0.0f, 0.0f, 0.0f,
+	// 	0.0f, 1.0f, 0.0f, 0.0f,
+	// 	0.0f, 0.0f, 1.0f, 0.0f,
+	// 	1.0f, 1.0f, 1.0f, 1.0f
+	// };
+
+	for (int i=0; i<16; ++i)
+		GameMgrCmp->instances.PushBack(data0[i]);
+
+	// for (int i=0; i<16; ++i)
+	// 	GameMgrCmp->instances.PushBack(data1[i]);
+	//
+	// for (int i=0; i<16; ++i)
+	// 	GameMgrCmp->instances.PushBack(data2[i]);
+	// 
+	// for (int i=0; i<16; ++i)
+	// 	GameMgrCmp->instances.PushBack(data3[i]);
+	// 
+	// for (int i=0; i<16; ++i)
+	// 	GameMgrCmp->instances.PushBack(data4[i]);
+
 	gConsole.LogInfo("GameManagerSystem::CrateScene creating mesh");
 	GameMgrCmp->mesh = new Mesh();
 	GameMgrCmp->mesh->SetPositions(verts);
 	// GameMgrCmp->mesh->SetNormals(normals);
 	GameMgrCmp->mesh->SetTextCoords(uv);
 	GameMgrCmp->mesh->SetIndicies(ind);
+	GameMgrCmp->mesh->SetInstances(GameMgrCmp->instances);
 	GameMgrCmp->mesh->UpdateDeviceProxy();
 
 	gConsole.LogInfo("GameManagerSystem::CrateScene creating mesh entity");
@@ -118,7 +171,8 @@ void GameManagerSystem::CreateScene(World* world)
 	MeshRenderingComponent* ProcMesh = world->GetComponent<MeshRenderingComponent>(ProcMeshID);
 	ProcMesh->SetMaterial(0, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 8.0f));
 	DeferredTaskSystem::AddComponentImmediate<TransformComponent>(world, ProcMeshID);
-	// TransformComponent* ProcMeshTrans = world->GetComponent<TransformComponent>(ProcMeshID);
+	TransformComponent* ProcMeshTrans = world->GetComponent<TransformComponent>(ProcMeshID);
+	ProcMeshTrans->SetLocalTranslation(Vector(0.0f, 0.0f, 5.0f));
 	// ProcMeshTrans->SetLocalScale(0.1f);
 	GameMgrCmp->GameEntities.PushBack(ProcMeshID);
 	gConsole.LogInfo("GameManagerSystem::CrateScene mesh entity created");
@@ -130,7 +184,8 @@ void GameManagerSystem::CreateScene(World* world)
 	ballMesh->SetMaterial(0, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(1.0f, 1.0f, 0.0f), Color(1.0f, 1.0f, 0.5f), 8.0f));
 	ballMesh->SetMaterial(1, PhongMaterial(Color(1.0f, 1.0f, 1.0f), Color(0.4f, 0.4f, 0.4f), Color(1.0f, 1.0f, 0.5f), 16.0f));
 	TransformComponent* ballTrans = world->GetComponent<TransformComponent>(Shaderball);
-	ballTrans->SetLocalScale(0.1f);
+	ballTrans->SetLocalTranslation(Vector(-10.0f, 0.0f, 0.0f));
+	ballTrans->SetLocalScale(0.01f);
 	GameMgrCmp->GameEntities.PushBack(Shaderball);
 
 	UniqueID Ground = DeferredTaskSystem::SpawnEntityImmediate(world);

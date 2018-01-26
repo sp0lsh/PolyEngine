@@ -1,16 +1,17 @@
 #include "EnginePCH.hpp"
 #include "Mesh.hpp"
 
-
 #include "TextureResource.hpp"
 
-Poly::Mesh::~Mesh()
+using namespace Poly;
+
+Mesh::~Mesh()
 {
 	if (Mtl.DiffuseTexture)
 		ResourceManager<TextureResource>::Release(Mtl.DiffuseTexture);
 }
 
-void Poly::Mesh::SetMaterial(const Material & value)
+void Mesh::SetMaterial(const Material & value)
 {
 	Mtl.SpecularIntensity = value.SpecularIntensity;
 	Mtl.SpecularPower = value.SpecularPower;
@@ -18,7 +19,7 @@ void Poly::Mesh::SetMaterial(const Material & value)
 	Mtl.DiffuseTexture = value.DiffuseTexture;
 }
 
-void Poly::Mesh::UpdateDeviceProxy()
+void Mesh::UpdateDeviceProxy()
 {
 	MeshProxy = gEngine->GetRenderingDevice()->CreateMesh();
 	MeshProxy->SetContent(*this);

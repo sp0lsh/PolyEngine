@@ -22,5 +22,7 @@ public:
 
 	Dynarray<UniqueID> GameEntities;
 
+	// particles
 	Mesh* mesh;
+	Dynarray<float> instances;
 };
