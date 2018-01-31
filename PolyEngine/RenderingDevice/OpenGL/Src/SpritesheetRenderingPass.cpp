@@ -17,8 +17,6 @@ using namespace Poly;
 SpritesheetRenderingPass::SpritesheetRenderingPass(const PostprocessQuad* quad)
 	: RenderingPassBase("Shaders/spritesheetVert.shader", "Shaders/spritesheetFrag.shader"), Quad(quad)
 {
-	gConsole.LogInfo("SpritesheetRenderingPass::SpritesheetRenderingPass");
-
 	GetProgram().RegisterUniform("float", "uTime");
 	GetProgram().RegisterUniform("mat4", "uP");
 	GetProgram().RegisterUniform("mat4", "uMV");
@@ -26,6 +24,7 @@ SpritesheetRenderingPass::SpritesheetRenderingPass(const PostprocessQuad* quad)
 	GetProgram().RegisterUniform("vec2", "uSubImages");
 	GetProgram().RegisterUniform("float", "uStartFrame");
 	GetProgram().RegisterUniform("float", "uSpeed");
+	GetProgram().RegisterUniform("vec4", "uColor");
 }
 
 void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType /*passType = ePassType::GLOBAL*/ )
@@ -49,14 +48,17 @@ void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera
 		const Matrix& objTransform = transform.GetGlobalTransformationMatrix();
 		Matrix screenTransform = mv * objTransform;
 
-		gConsole.LogError("SpritesheetRenderingPass::OnRun subImages: {}, uSpeed: {}, uStartFrame: {}",
-			settings.SubImages, settings.Speed, settings.StartFrame);
+		// gConsole.LogError("SpritesheetRenderingPass::OnRun subImages: {}, uSpeed: {}, uStartFrame: {}",
+		// 	settings.SubImages, settings.Speed, settings.StartFrame);
 
 		GetProgram().SetUniform("uMV", screenTransform);
 		GetProgram().SetUniform("uScale", objTransform.m00, objTransform.m11);
 		GetProgram().SetUniform("uSubImages", settings.SubImages.X, settings.SubImages.Y);
  		GetProgram().SetUniform("uSpeed", (float)(settings.Speed));
- 		GetProgram().SetUniform("uStartFrame", (float)(settings.StartFrame));
+		GetProgram().SetUniform("uColor", settings.Color);
+
+		float startFrame = settings.IsRandom ? RandomRange(0.0f, settings.SubImages.X * settings.SubImages.Y) : settings.StartFrame;
+ 		GetProgram().SetUniform("uStartFrame", startFrame);
 
 		const TextureResource* Spritesheet = spritesheetCmp->GetSpritesheet();
 		GLuint TextureID = Spritesheet == nullptr

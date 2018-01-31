@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0DF6B40D-21E8-4877-BEE8-F87422D0C5FF}</ProjectGuid>
     <RootNamespace>UnitTests</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -142,8 +142,10 @@
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\MatrixTests.cpp" />
     <ClCompile Include="Src\OptionalTests.cpp" />
+    <ClCompile Include="Src\PriorityQueueTests.cpp" />
     <ClCompile Include="Src\QuaternionTests.cpp" />
     <ClCompile Include="Src\QueueTests.cpp" />
+    <ClCompile Include="Src\RandomTests.cpp" />
     <ClCompile Include="Src\ResourceManagerTests.cpp" />
     <ClCompile Include="Src\RTTITests.cpp" />
     <ClCompile Include="Src\SafePtrTests.cpp" />

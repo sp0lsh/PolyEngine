@@ -7,7 +7,7 @@
 
 using namespace Poly;
 
-SpritesheetComponent::SpritesheetComponent(const Settings& settings)
+SpritesheetComponent::SpritesheetComponent(const Settings& settings) : settings(settings)
 {
 	Spritesheet = ResourceManager<TextureResource>::Load(settings.SpritePath, settings.Source, eTextureUsageType::DIFFUSE);
 }
@@ -15,5 +15,7 @@ SpritesheetComponent::SpritesheetComponent(const Settings& settings)
 SpritesheetComponent::~SpritesheetComponent()
 {
 	if (Spritesheet)
+	{
 		ResourceManager<TextureResource>::Release(Spritesheet);
+	}
 }
