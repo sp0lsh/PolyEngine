@@ -11,23 +11,21 @@ namespace Poly {
 
 		struct ENGINE_DLLEXPORT Settings
 		{
-			eResourceSource source;
-			String spritePath;
-			int SizeX;
-			int SizeY;
-			float StartFrame;
-			float Speed;
-			float SpeedExp;
-			float UseRnd;
+			String SpritePath;
+			eResourceSource Source = eResourceSource::GAME;
+			Vector2f SubImages = Vector2f(4.0, 4.0);
+			float StartFrame = 0.0f;
+			float Speed = 1.0f;
+			float UseRnd = 0.0f;
 		};
 
 		friend void RenderingSystem::RenderingPhase(World*);
 	public:
-		SpritesheetComponent(Settings settings);
+		SpritesheetComponent(const Settings& settings);
 		virtual ~SpritesheetComponent();
 
 		const TextureResource* GetSpritesheet() const { return Spritesheet; }
-		const Settings GetSettings() const { return settings; }
+		const Settings& GetSettings() const { return settings; }
 
 	private:
 		Settings settings;
