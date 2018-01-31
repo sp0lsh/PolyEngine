@@ -39,26 +39,22 @@ void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera
 	GetProgram().SetUniform("uTime", Time);
 	GetProgram().SetUniform("uP", p);
 
-	// Render meshes
 	for (auto componentsTuple : world->IterateComponents<SpritesheetComponent>())
 	{
 		const SpritesheetComponent* spritesheetCmp = std::get<SpritesheetComponent*>(componentsTuple);
-		const SpritesheetComponent::Settings settings = spritesheetCmp->GetSettings();
 		const EntityTransform& transform = spritesheetCmp->GetTransform();
 		const Matrix& objTransform = transform.GetGlobalTransformationMatrix();
 		Matrix screenTransform = mv * objTransform;
 
-		// gConsole.LogError("SpritesheetRenderingPass::OnRun subImages: {}, uSpeed: {}, uStartFrame: {}",
-		// 	settings.SubImages, settings.Speed, settings.StartFrame);
+		const SpritesheetComponent::Settings settings = spritesheetCmp->GetSettings();
+		float startFrame = settings.IsRandom ? RandomRange(0.0f, settings.SubImages.X * settings.SubImages.Y) : settings.StartFrame;
 
 		GetProgram().SetUniform("uMV", screenTransform);
 		GetProgram().SetUniform("uScale", objTransform.m00, objTransform.m11);
 		GetProgram().SetUniform("uSubImages", settings.SubImages.X, settings.SubImages.Y);
- 		GetProgram().SetUniform("uSpeed", (float)(settings.Speed));
 		GetProgram().SetUniform("uColor", settings.Color);
-
-		float startFrame = settings.IsRandom ? RandomRange(0.0f, settings.SubImages.X * settings.SubImages.Y) : settings.StartFrame;
  		GetProgram().SetUniform("uStartFrame", startFrame);
+ 		GetProgram().SetUniform("uSpeed", (float)(settings.Speed));
 
 		const TextureResource* Spritesheet = spritesheetCmp->GetSpritesheet();
 		GLuint TextureID = Spritesheet == nullptr

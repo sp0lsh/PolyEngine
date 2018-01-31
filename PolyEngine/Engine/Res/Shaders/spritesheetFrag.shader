@@ -3,9 +3,9 @@
 uniform sampler2D i_color;
 uniform float uTime;
 uniform vec2 uSubImages;
-uniform float uSpeed;
-uniform float uStartFrame;
 uniform vec4 uColor;
+uniform float uStartFrame;
+uniform float uSpeed;
 
 in vec2 vUV;
 out vec4 color;
