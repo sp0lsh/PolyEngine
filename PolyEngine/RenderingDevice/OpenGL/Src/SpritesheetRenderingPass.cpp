@@ -46,7 +46,7 @@ void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera
 		const Matrix& objTransform = transform.GetGlobalTransformationMatrix();
 		Matrix screenTransform = mv * objTransform;
 
-		const SpritesheetComponent::Settings settings = spritesheetCmp->GetSettings();
+		const SpritesheetSettings settings = spritesheetCmp->GetSettings();
 		float startFrame = settings.IsRandom ? RandomRange(0.0f, settings.SubImages.X * settings.SubImages.Y) : settings.StartFrame;
 
 		GetProgram().SetUniform("uMV", screenTransform);

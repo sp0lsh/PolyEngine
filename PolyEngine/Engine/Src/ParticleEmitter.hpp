@@ -3,6 +3,7 @@
 #include <BaseObject.hpp>
 #include <IRenderingDevice.hpp>
 #include <Dynarray.hpp>
+#include <SpritesheetComponent.hpp>
 
 typedef unsigned int GLuint;
 
@@ -12,6 +13,13 @@ namespace Poly
 	class ENGINE_DLLEXPORT ParticleEmitter : public BaseObject<>
 	{
 	public:
+
+		enum class eSpawnSpace
+		{
+			LOCAL_SPACE,
+			WORLD_SPACE,
+			_COUNT
+		};
 
 		struct ENGINE_DLLEXPORT Particle
 		{
@@ -26,18 +34,23 @@ namespace Poly
 		struct ENGINE_DLLEXPORT Settings
 		{
 			int MaxSize = 1000;
-			int InitialSize;
+			int InitialSize = 10;
+			float BurstTimeMin = 1.0f;
+			float BurstTimeMax = 2.0f;
+			int BurstSizeMin = 1;
+			int BurstSizeMax = 5;
+			eSpawnSpace SpawnSpace = eSpawnSpace::WORLD_SPACE;
+			// TODO: move to material
+			SpritesheetSettings SpritesheetSettings;
 			float Speed = 1.0f;
-			float BurstTimeMin;
-			float BurstTimeMax;
-			int BurstSizeMin;
-			int BurstSizeMax;
-			Color Color;
+			Color Color = Color::WHITE;
+			// TODO end
 			std::function<void(Particle*)> ParticleInitFunc;
 			std::function<void(Particle*)> ParticleUpdateFunc;
 		};
 
-		ParticleEmitter(Settings settings);
+		ParticleEmitter(const Settings& settings);
+		~ParticleEmitter();
 
 		const Dynarray<float>& GetInstances() const { return InstancesTransform; }
 		const IParticleDeviceProxy* GetParticleProxy() const { return ParticleProxy.get(); }
@@ -46,7 +59,8 @@ namespace Poly
 
 		bool GetIsBurstEnabled() { return IsBurstEnabled; }
 		
-		Settings GetSettings() { return settings; }
+		const Settings& GetSettings() const { return settings; }
+		const TextureResource* GetSpritesheet() const { return Spritesheet; }
 
 		void SetBurstEnabled(bool value) { IsBurstEnabled = value; }
 
@@ -58,6 +72,7 @@ namespace Poly
 
 	private:
 		Settings settings;
+		TextureResource* Spritesheet;
 
 		IterablePoolAllocator<Particle> ParticlesPool;
 

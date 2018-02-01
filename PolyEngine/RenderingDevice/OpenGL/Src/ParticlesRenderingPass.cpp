@@ -15,8 +15,6 @@ using namespace Poly;
 ParticlesRenderingPass::ParticlesRenderingPass()
 	: RenderingPassBase("Shaders/instancedVert.shader", "Shaders/instancedFrag.shader")
 {
-	// gConsole.LogInfo("ParticlesRenderingPass::ParticlesRenderingPass");
-
 	GetProgram().RegisterUniform("float", "uTime");
 	GetProgram().RegisterUniform("mat4", "uMV");
 	GetProgram().RegisterUniform("mat4", "uP");
@@ -25,8 +23,6 @@ ParticlesRenderingPass::ParticlesRenderingPass()
 
 void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType passType = ePassType::GLOBAL)
 {
-	// gConsole.LogInfo("ParticlesRenderingPass::OnRun");
-
 	float Time = (float)TimeSystem::GetTimerElapsedTime(world, eEngineTimer::GAMEPLAY);
 	const Matrix& mv = camera->GetModelViewMatrix();
 	const Matrix& p = camera->GetProjectionMatrix();
@@ -37,21 +33,21 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 	GetProgram().SetUniform("uTime", Time);
 	GetProgram().SetUniform("uP", p);
 
-	// Render meshes
 	for (auto componentsTuple : world->IterateComponents<ParticleComponent>())
 	{
-		ParticleComponent* particleCmp = std::get<ParticleComponent*>(componentsTuple);
+		const ParticleComponent* particleCmp = std::get<ParticleComponent*>(componentsTuple);
 		const EntityTransform& transform = particleCmp->GetTransform();
 		const Matrix& objTransform = transform.GetGlobalTransformationMatrix();
 		Matrix screenTransform = mv * objTransform;
+		
 		GetProgram().SetUniform("uMV", screenTransform);
 		GetProgram().SetUniform("uColor", particleCmp->GetEmitter()->GetSettings().Color);
 		GetProgram().SetUniform("uSpeed", particleCmp->GetEmitter()->GetSettings().Speed);
 
 		int partileLen = particleCmp->GetEmitter()->GetInstances().GetSize() / 16;
+		const TextureResource* Texture = particleCmp->GetEmitter()->GetSpritesheet();
 		const GLParticleDeviceProxy* particleProxy = static_cast<const GLParticleDeviceProxy*>(particleCmp->GetEmitter()->GetParticleProxy());
 		GLuint particleVAO = particleProxy->GetVAO();
-		const TextureResource* Texture = particleCmp->GetSpritesheet();
 
 		GLuint TextureID = Texture == nullptr
 			? FallbackWhiteTexture
