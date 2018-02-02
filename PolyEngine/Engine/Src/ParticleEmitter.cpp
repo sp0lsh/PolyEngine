@@ -54,7 +54,7 @@ void ParticleEmitter::Emit(size_t size)
 
 void ParticleEmitter::Update(World* world)
 {
-	// gConsole.LogInfo("ParticleEmitter::Update");
+	gConsole.LogInfo("ParticleEmitter::Update {}/{}", ParticlesPool.GetSize(), settings.MaxSize);
 
 	float deltaTime = (float)(TimeSystem::GetTimerDeltaTime(world, Poly::eEngineTimer::GAMEPLAY));
 
@@ -62,8 +62,8 @@ void ParticleEmitter::Update(World* world)
 	{
 		if (NextBurstTime < 0.0f)
 		{
-			NextBurstTime = Random(settings.BurstTimeMin, settings.BurstTimeMax);
-			Emit((int)Random(settings.BurstSizeMin, settings.BurstSizeMax));
+			NextBurstTime = RandomRange(settings.BurstTimeMin, settings.BurstTimeMax);
+			Emit((int)RandomRange(settings.BurstSizeMin, settings.BurstSizeMax));
 		}
 		else
 		{
@@ -86,7 +86,6 @@ void ParticleEmitter::Update(World* world)
 	// {
 	// 	gConsole.LogInfo("ParticleEmitter::Update toDeleteLen: {}", ParticleToDelete.GetSize());
 	// }
-
 
 	for (Particle* p : ParticleToDelete)
 	{
@@ -135,13 +134,13 @@ void ParticleEmitter::UpdateDeviceProxy()
 	ParticleProxy->SetContent(*this);
 }
 
-float ParticleEmitter::Random()
-{
-	return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-}
-
-float ParticleEmitter::Random(float min, float max)
-{
-	float rnd = Random();
-	return Lerp(min, max, rnd);
-}
+// float ParticleEmitter::Random()
+// {
+// 	return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+// }
+// 
+// float ParticleEmitter::Random(float min, float max)
+// {
+// 	float rnd = Random();
+// 	return Lerp(min, max, rnd);
+// }

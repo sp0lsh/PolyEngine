@@ -85,7 +85,7 @@ namespace Poly
 
 		bool IsBurstEnabled = true;
 
-		float Random();
-		float Random(float min, float max);
+		// float Random();
+		// float Random(float min, float max);
 	};
 }
