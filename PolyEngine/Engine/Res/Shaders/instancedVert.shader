@@ -18,15 +18,14 @@ float nrand(float n)
 void main()
 {
 	float rnd = nrand(float(gl_InstanceID));
-    // float _ScaleY = 0.5+smoothstep( -0.8, 0.8, sin(2.0*7.5*uTime) );
-    // float _ScaleX = 0.5+smoothstep( -0.8, 0.8, sin(2.0*7.5*uTime) );
     float _ScaleY = aOffset[0][0];
     float _ScaleX = aOffset[1][1];
 
     vec4 p = vec4(aPos, 1.0);
-    p = uP * (uMV * aOffset * vec4(0.0, 0.0, 0.0, 1.0)
-		+ vec4(p.x, p.y, 0.0, 0.0)
-        * vec4(_ScaleX, _ScaleY, 1.0, 1.0));
+//     p = uP * (uMV * aOffset * vec4(0.0, 0.0, 0.0, 1.0)
+// 		+ vec4(p.x, p.y, 0.0, 0.0)
+//         * vec4(_ScaleX, _ScaleY, 1.0, 1.0));
+    p = uP * uMV * aOffset * p;
 	
     gl_Position = p;
     vTexCoord = aTexCoord;

@@ -6,7 +6,7 @@
 using namespace Poly;
 
 ParticleEmitter::ParticleEmitter(const Settings& settings)
-	: settings(settings), ParticlesPool(settings.MaxSize)
+	: settings(settings), ParticlesPool(settings.MaxSize), toEmit(settings.InitialSize)
 {
 	Spritesheet = ResourceManager<TextureResource>::Load(
 		settings.SpritesheetSettings.SpritePath,
@@ -14,7 +14,7 @@ ParticleEmitter::ParticleEmitter(const Settings& settings)
 		eTextureUsageType::DIFFUSE
 	);
 	ParticleProxy = gEngine->GetRenderingDevice()->CreateParticle();
-	Emit(settings.InitialSize);
+	// Emit(settings.InitialSize);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -27,80 +27,35 @@ ParticleEmitter::~ParticleEmitter()
 
 void ParticleEmitter::Emit(size_t size)
 {
-	size_t sizeLeft = ParticlesPool.GetFreeBlockCount();
-	if (size > sizeLeft)
-	{
-		gConsole.LogInfo("ParticleEmitter::Emit not enough memory in room (1000)");
-	}
-
-	size_t amount = Clamp(size, (size_t)0, sizeLeft);
-
-	// gConsole.LogInfo("ParticleEmitter::Emit emitLen: {}", amount);
-
-	while (amount > 0)
-	{
-		Particle* p = ParticlesPool.Alloc();
-		::new(p) Particle();
-
-		settings.ParticleInitFunc(p);
-
-		--amount;
-	}
-
-	RecreateBufferForProxy();
-
-	UpdateDeviceProxy();
+	toEmit += size;
+// 	size_t sizeLeft = ParticlesPool.GetFreeBlockCount();
+// 	if (size > sizeLeft)
+// 	{
+// 		gConsole.LogInfo("ParticleEmitter::Emit not enough memory in room (1000)");
+// 	}
+// 
+// 	size_t amount = Clamp(size, (size_t)0, sizeLeft);
+// 
+// 	// gConsole.LogInfo("ParticleEmitter::Emit emitLen: {}", amount);
+// 
+// 	while (amount > 0)
+// 	{
+// 		Particle* p = ParticlesPool.Alloc();
+// 		::new(p) Particle();
+// 
+// 		settings.ParticleInitFunc(p);
+// 
+// 		--amount;
+// 	}
+// 
+// 	RecreateBufferForProxy();
+// 
+// 	UpdateDeviceProxy();
 }
 
 void ParticleEmitter::Update(World* world)
 {
-	gConsole.LogInfo("ParticleEmitter::Update {}/{}", ParticlesPool.GetSize(), settings.MaxSize);
 
-	float deltaTime = (float)(TimeSystem::GetTimerDeltaTime(world, Poly::eEngineTimer::GAMEPLAY));
-
-	if (IsBurstEnabled)
-	{
-		if (NextBurstTime < 0.0f)
-		{
-			NextBurstTime = RandomRange(settings.BurstTimeMin, settings.BurstTimeMax);
-			Emit((int)RandomRange(settings.BurstSizeMin, settings.BurstSizeMax));
-		}
-		else
-		{
-			NextBurstTime -= deltaTime;
-		}
-	}
-
-	Dynarray<Particle*> ParticleToDelete;
-
-	for (Particle& p : ParticlesPool)
-	{
-		p.Age += deltaTime;
-		if (p.Age > p.LifeTime)
-		{
-			ParticleToDelete.PushBack(&p);
-		}
-	}
-
-	// if (ParticleToDelete.GetSize() > 0)
-	// {
-	// 	gConsole.LogInfo("ParticleEmitter::Update toDeleteLen: {}", ParticleToDelete.GetSize());
-	// }
-
-	for (Particle* p : ParticleToDelete)
-	{
-		p->~Particle();
-		ParticlesPool.Free(p);
-	}
-
-	for (Particle& p : ParticlesPool)
-	{
-		settings.ParticleUpdateFunc(&p);
-	}
-
-	RecreateBufferForProxy();
-
-	UpdateDeviceProxy();
 }
 
 void ParticleEmitter::RecreateBufferForProxy()

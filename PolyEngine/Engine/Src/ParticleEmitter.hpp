@@ -4,6 +4,7 @@
 #include <IRenderingDevice.hpp>
 #include <Dynarray.hpp>
 #include <SpritesheetComponent.hpp>
+#include "ParticleUpdateSystem.hpp"
 
 typedef unsigned int GLuint;
 
@@ -12,6 +13,8 @@ namespace Poly
 
 	class ENGINE_DLLEXPORT ParticleEmitter : public BaseObject<>
 	{
+		friend void ParticleUpdateSystem::EmitterEmit(World*, ParticleEmitter*);
+		friend void ParticleUpdateSystem::EmitterUpdate(World*, ParticleEmitter*);
 	public:
 
 		enum class eSpawnSpace
@@ -85,7 +88,6 @@ namespace Poly
 
 		bool IsBurstEnabled = true;
 
-		// float Random();
-		// float Random(float min, float max);
+		int toEmit = 0;
 	};
 }
