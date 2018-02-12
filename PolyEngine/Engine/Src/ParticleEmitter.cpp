@@ -14,7 +14,6 @@ ParticleEmitter::ParticleEmitter(const Settings& settings)
 		eTextureUsageType::DIFFUSE
 	);
 	ParticleProxy = gEngine->GetRenderingDevice()->CreateParticle();
-	// Emit(settings.InitialSize);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -28,29 +27,6 @@ ParticleEmitter::~ParticleEmitter()
 void ParticleEmitter::Emit(size_t size)
 {
 	toEmit += size;
-// 	size_t sizeLeft = ParticlesPool.GetFreeBlockCount();
-// 	if (size > sizeLeft)
-// 	{
-// 		gConsole.LogInfo("ParticleEmitter::Emit not enough memory in room (1000)");
-// 	}
-// 
-// 	size_t amount = Clamp(size, (size_t)0, sizeLeft);
-// 
-// 	// gConsole.LogInfo("ParticleEmitter::Emit emitLen: {}", amount);
-// 
-// 	while (amount > 0)
-// 	{
-// 		Particle* p = ParticlesPool.Alloc();
-// 		::new(p) Particle();
-// 
-// 		settings.ParticleInitFunc(p);
-// 
-// 		--amount;
-// 	}
-// 
-// 	RecreateBufferForProxy();
-// 
-// 	UpdateDeviceProxy();
 }
 
 void ParticleEmitter::Update(World* world)
@@ -88,14 +64,3 @@ void ParticleEmitter::UpdateDeviceProxy()
 {
 	ParticleProxy->SetContent(*this);
 }
-
-// float ParticleEmitter::Random()
-// {
-// 	return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-// }
-// 
-// float ParticleEmitter::Random(float min, float max)
-// {
-// 	float rnd = Random();
-// 	return Lerp(min, max, rnd);
-// }
