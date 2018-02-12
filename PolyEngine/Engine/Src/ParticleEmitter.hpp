@@ -56,39 +56,24 @@ namespace Poly
 		ParticleEmitter(const Settings& settings);
 		~ParticleEmitter();
 
-		const Dynarray<float>& GetInstances() const { return InstancesTransform; }
-		const IParticleDeviceProxy* GetParticleProxy() const { return ParticleProxy.get(); }
-
-		void Emit(size_t quota);
-
-		bool GetIsBurstEnabled() { return IsBurstEnabled; }
-		
 		const Settings& GetSettings() const { return settings; }
 		const TextureResource* GetSpritesheet() const { return Spritesheet; }
-
+		const IParticleDeviceProxy* GetParticleProxy() const { return ParticleProxy.get(); }
+		bool GetIsBurstEnabled() { return IsBurstEnabled; }
 		void SetBurstEnabled(bool value) { IsBurstEnabled = value; }
-
-		// void Update(World* world);
-
-		// void RecreateBufferForProxy();
-
+		const Dynarray<float>& GetInstances() const { return InstancesTransform; }
 		bool HasInstances() const { return InstancesTransform.GetSize() != 0; }
+		
+		void Emit(size_t quota);
 
 	private:
 		Settings settings;
 		TextureResource* Spritesheet;
-
-		IterablePoolAllocator<Particle> ParticlesPool;
-
-		Dynarray<float> InstancesTransform;
 		std::unique_ptr<IParticleDeviceProxy> ParticleProxy;
-
-		void UpdateDeviceProxy();
-
-		float NextBurstTime = -1.0;
-
 		bool IsBurstEnabled = true;
-
+		float NextBurstTime = -1.0;
 		int toEmit = 0;
+		IterablePoolAllocator<Particle> ParticlesPool;
+		Dynarray<float> InstancesTransform;
 	};
 }

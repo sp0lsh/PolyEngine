@@ -92,8 +92,6 @@ void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 	{
 		emitter->settings.ParticleUpdateFunc(&p);
 	}
-
-	// emitter->RecreateBufferForProxy();
 }
 
 void ParticleUpdateSystem::EmitterRecreateBuffer(World* world, ParticleEmitter* emitter)
@@ -121,5 +119,5 @@ void ParticleUpdateSystem::EmitterRecreateBuffer(World* world, ParticleEmitter* 
 		transIndx += 16;
 	}
 
-	emitter->UpdateDeviceProxy();
+	emitter->ParticleProxy->SetContent(*emitter);
 }
