@@ -15,6 +15,7 @@ namespace Poly
 	{
 		friend void ParticleUpdateSystem::EmitterEmit(World*, ParticleEmitter*);
 		friend void ParticleUpdateSystem::EmitterUpdate(World*, ParticleEmitter*);
+		friend void ParticleUpdateSystem::EmitterRecreateBuffer(World*, ParticleEmitter*);
 	public:
 
 		enum class eSpawnSpace
@@ -67,9 +68,9 @@ namespace Poly
 
 		void SetBurstEnabled(bool value) { IsBurstEnabled = value; }
 
-		void Update(World* world);
+		// void Update(World* world);
 
-		void RecreateBufferForProxy();
+		// void RecreateBufferForProxy();
 
 		bool HasInstances() const { return InstancesTransform.GetSize() != 0; }
 

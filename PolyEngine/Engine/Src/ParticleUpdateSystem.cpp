@@ -15,9 +15,10 @@ void ParticleUpdateSystem::ParticleUpdatePhase(World* world)
 	for (auto compTuple : world->IterateComponents<ParticleComponent>())
 	{
 		ParticleComponent* particle = std::get<ParticleComponent*>(compTuple);
-		// particle->GetEmitter()->Update(world);
+
 		EmitterEmit(world, particle->Emitter);
 		EmitterUpdate(world, particle->Emitter);
+		EmitterRecreateBuffer(world, particle->Emitter);
 	}
 }
 
@@ -92,6 +93,33 @@ void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 		emitter->settings.ParticleUpdateFunc(&p);
 	}
 
-	emitter->RecreateBufferForProxy();
+	// emitter->RecreateBufferForProxy();
+}
+
+void ParticleUpdateSystem::EmitterRecreateBuffer(World* world, ParticleEmitter* emitter)
+{
+	emitter->InstancesTransform.Clear();
+	emitter->InstancesTransform.Resize(16 * emitter->ParticlesPool.GetSize());
+
+	for (int i = 0; i < emitter->InstancesTransform.GetSize(); ++i)
+	{
+		emitter->InstancesTransform[i] = 0.0f;
+	}
+
+	int transIndx = 0;
+	for (ParticleEmitter::Particle& p : emitter->ParticlesPool)
+	{
+		// Scale
+		emitter->InstancesTransform[transIndx + 0] = p.Scale.X;
+		emitter->InstancesTransform[transIndx + 5] = p.Scale.Y;
+		emitter->InstancesTransform[transIndx + 10] = p.Scale.Z;
+		emitter->InstancesTransform[transIndx + 15] = 1.0f;
+		// translation
+		emitter->InstancesTransform[transIndx + 12] = p.Position.X;
+		emitter->InstancesTransform[transIndx + 13] = p.Position.Y;
+		emitter->InstancesTransform[transIndx + 14] = p.Position.Z;
+		transIndx += 16;
+	}
+
 	emitter->UpdateDeviceProxy();
 }

@@ -10,5 +10,6 @@ namespace Poly
 		void ParticleUpdatePhase(World* world);
 		void EmitterEmit(World*, ParticleEmitter*);
 		void EmitterUpdate(World*, ParticleEmitter*);
+		void EmitterRecreateBuffer(World*, ParticleEmitter*);
 	}
 }
