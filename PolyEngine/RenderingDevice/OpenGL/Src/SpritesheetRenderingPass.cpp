@@ -30,8 +30,8 @@ SpritesheetRenderingPass::SpritesheetRenderingPass(const PostprocessQuad* quad)
 void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType /*passType = ePassType::GLOBAL*/ )
 {
 	float Time = (float)TimeSystem::GetTimerElapsedTime(world, eEngineTimer::GAMEPLAY);
-	const Matrix& mv = camera->GetModelViewMatrix();
-	const Matrix& p = camera->GetProjectionMatrix();
+	const Matrix& mv = camera->GetViewFromWorld();
+	const Matrix& p = camera->GetScreenFromView();
 
 	glDisable(GL_CULL_FACE);
 
