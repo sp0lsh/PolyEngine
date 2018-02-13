@@ -31,7 +31,7 @@ void DebugNormalsRenderingPass::OnRun(World* world, const CameraComponent* camer
 		 	continue;
 		}
 
-		const Matrix& objTransform = trans.GetGlobalTransformationMatrix();
+		const Matrix& objTransform = trans.GetWorldFromModel();
 		Matrix screenTransform = mvp * objTransform;
 		GetProgram().SetUniform("uTransform", objTransform);
 		GetProgram().SetUniform("uMVPTransform", screenTransform);

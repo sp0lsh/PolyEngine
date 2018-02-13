@@ -43,7 +43,7 @@ void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera
 	{
 		const SpritesheetComponent* spritesheetCmp = std::get<SpritesheetComponent*>(componentsTuple);
 		const EntityTransform& transform = spritesheetCmp->GetTransform();
-		const Matrix& objTransform = transform.GetGlobalTransformationMatrix();
+		const Matrix& objTransform = transform.GetWorldFromModel();
 		Matrix screenTransform = mv * objTransform;
 
 		const SpritesheetSettings settings = spritesheetCmp->GetSettings();

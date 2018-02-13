@@ -28,7 +28,7 @@ void DebugNormalsWireframeRenderingPass::OnRun(World* world, const CameraCompone
 		const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
 		const EntityTransform& trans = meshCmp->GetTransform();
 
-		const Matrix& objTransform = trans.GetGlobalTransformationMatrix();
+		const Matrix& objTransform = trans.GetWorldFromModel();
 		Matrix MVPTransform = mModelView * objTransform;
 		Matrix mNormalMatrix = (mModelView * objTransform).GetInversed().GetTransposed();
 		GetProgram().SetUniform("u_MVP", MVPTransform);

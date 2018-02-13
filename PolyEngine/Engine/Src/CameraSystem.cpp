@@ -26,7 +26,7 @@ void Poly::CameraSystem::CameraUpdatePhase(World* world)
 				cameraCmp->ScreenFromView.SetOrthographic(cameraCmp->Top, cameraCmp->Bottom, cameraCmp->Left, cameraCmp->Right, cameraCmp->Near, cameraCmp->Far);
 		}
 
-		cameraCmp->ViewFromWorld = transform.GetGlobalTransformationMatrix().GetInversed();
+		cameraCmp->ViewFromWorld = transform.GetWorldFromModel().GetInversed();
 		cameraCmp->ScreenFromWorld = cameraCmp->ScreenFromView * cameraCmp->ViewFromWorld;
 
 

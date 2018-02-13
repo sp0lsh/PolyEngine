@@ -15,14 +15,14 @@ void ParticleUpdateSystem::ParticleUpdatePhase(World* world)
 	for (auto compTuple : world->IterateComponents<ParticleComponent>())
 	{
 		ParticleComponent* particle = std::get<ParticleComponent*>(compTuple);
-
-		EmitterEmit(world, particle->Emitter);
-		EmitterUpdate(world, particle->Emitter);
+		ParticleEmitter* emitter = particle->Emitter;
+		EmitterEmit(world, emitter, particle);
+		EmitterUpdate(world, emitter);
 		EmitterRecreateBuffer(world, particle->Emitter);
 	}
 }
 
-void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter)
+void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, ParticleComponent*)
 {
 	size_t size = emitter->toEmit;
 	emitter->toEmit = 0;
