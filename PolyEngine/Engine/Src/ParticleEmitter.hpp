@@ -11,9 +11,11 @@ typedef unsigned int GLuint;
 namespace Poly
 {
 
+	class ParticleComponent;
+
 	class ENGINE_DLLEXPORT ParticleEmitter : public BaseObject<>
 	{
-		friend void ParticleUpdateSystem::EmitterEmit(World*, ParticleEmitter*);
+		friend void ParticleUpdateSystem::EmitterEmit(World*, ParticleEmitter*, ParticleComponent*);
 		friend void ParticleUpdateSystem::EmitterUpdate(World*, ParticleEmitter*);
 		friend void ParticleUpdateSystem::EmitterRecreateBuffer(World*, ParticleEmitter*);
 	public:
@@ -63,6 +65,7 @@ namespace Poly
 		void SetBurstEnabled(bool value) { IsBurstEnabled = value; }
 		const Dynarray<float>& GetInstances() const { return InstancesTransform; }
 		bool HasInstances() const { return InstancesTransform.GetSize() != 0; }
+		int GetInstancesCount() const { return InstancesTransform.GetSize() / 16; }
 		
 		void Emit(size_t quota);
 
