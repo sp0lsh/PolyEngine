@@ -16,31 +16,35 @@ ParticlesRenderingPass::ParticlesRenderingPass()
 	: RenderingPassBase("Shaders/instancedVert.shader", "Shaders/instancedFrag.shader")
 {
 	GetProgram().RegisterUniform("float", "uTime");
-	GetProgram().RegisterUniform("mat4", "uMV");
-	GetProgram().RegisterUniform("mat4", "uP");
+	GetProgram().RegisterUniform("mat4", "uScreenFromView");
+	GetProgram().RegisterUniform("mat4", "uViewFromWorld");
+	GetProgram().RegisterUniform("mat4", "uWorldFromModel");
 	GetProgram().RegisterUniform("vec4", "uColor");
 }
 
 void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, const AARect& /*rect*/, ePassType passType = ePassType::GLOBAL)
 {
 	float Time = (float)TimeSystem::GetTimerElapsedTime(world, eEngineTimer::GAMEPLAY);
-	const Matrix& mv = camera->GetViewFromWorld();
-	const Matrix& p = camera->GetScreenFromView();
+	const Matrix& ViewFromWorld = camera->GetViewFromWorld();
+	const Matrix& ScreenFromView = camera->GetScreenFromView();
 
 	glDisable(GL_CULL_FACE);
 
 	GetProgram().BindProgram();
 	GetProgram().SetUniform("uTime", Time);
-	GetProgram().SetUniform("uP", p);
+	GetProgram().SetUniform("uScreenFromView", ScreenFromView);
 
 	for (auto componentsTuple : world->IterateComponents<ParticleComponent>())
 	{
 		const ParticleComponent* particleCmp = std::get<ParticleComponent*>(componentsTuple);
 		const EntityTransform& transform = particleCmp->GetTransform();
-		const Matrix& objTransform = transform.GetWorldFromModel();
-		Matrix screenTransform = mv * objTransform;
+		const Matrix& WorldFromModel = particleCmp->GetEmitter()->GetSettings().SimulationSpace == ParticleEmitter::eSimulationSpace::LOCAL_SPACE
+			? transform.GetWorldFromModel()
+			: Matrix();
+		// Matrix ViewFromModel = ViewFromWorld * WorldFromModel;
 		
-		GetProgram().SetUniform("uMV", screenTransform);
+		GetProgram().SetUniform("uViewFromWorld", ViewFromWorld);
+		GetProgram().SetUniform("uWorldFromModel", WorldFromModel);
 		GetProgram().SetUniform("uColor", particleCmp->GetEmitter()->GetSettings().Color);
 		GetProgram().SetUniform("uSpeed", particleCmp->GetEmitter()->GetSettings().Speed);
 

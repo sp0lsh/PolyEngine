@@ -20,7 +20,7 @@ namespace Poly
 		friend void ParticleUpdateSystem::EmitterRecreateBuffer(World*, ParticleEmitter*);
 	public:
 
-		enum class eSpawnSpace
+		enum class eSimulationSpace
 		{
 			LOCAL_SPACE,
 			WORLD_SPACE,
@@ -45,7 +45,7 @@ namespace Poly
 			float BurstTimeMax = 2.0f;
 			int BurstSizeMin = 1;
 			int BurstSizeMax = 5;
-			eSpawnSpace SpawnSpace = eSpawnSpace::WORLD_SPACE;
+			eSimulationSpace SimulationSpace = eSimulationSpace::WORLD_SPACE;
 			// TODO: move to material
 			SpritesheetSettings SpritesheetSettings;
 			float Speed = 1.0f;

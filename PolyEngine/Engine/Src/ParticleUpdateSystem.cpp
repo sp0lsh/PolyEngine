@@ -22,7 +22,7 @@ void ParticleUpdateSystem::ParticleUpdatePhase(World* world)
 	}
 }
 
-void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, ParticleComponent*)
+void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, ParticleComponent* particleCmp)
 {
 	size_t size = emitter->toEmit;
 	emitter->toEmit = 0;
@@ -35,12 +35,22 @@ void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, P
 	size_t amount = Clamp(size, (size_t)0, sizeLeft);
 
 	// gConsole.LogInfo("ParticleEmitter::Emit emitLen: {}", amount);
+	Vector PositionInModel = emitter->GetSettings().SimulationSpace == ParticleEmitter::eSimulationSpace::WORLD_SPACE
+		? particleCmp->GetTransform().GetGlobalTranslation()
+		: Vector::ZERO;
 
 	while (amount > 0)
 	{
 		ParticleEmitter::Particle* p = emitter->ParticlesPool.Alloc();
 		::new(p) ParticleEmitter::Particle();
 		
+		p->Position = PositionInModel;
+		p->Scale = Vector::ONE;
+		p->Velocity = Vector::ZERO;
+		p->Acceleration = Vector::ZERO;
+		p->Age = 0.0f;
+		p->LifeTime = 1.0f;
+
 		emitter->settings.ParticleInitFunc(p);
 
 		--amount;
@@ -90,6 +100,8 @@ void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 
 	for (ParticleEmitter::Particle& p : emitter->ParticlesPool)
 	{
+		p.Position += p.Velocity;
+		p.Velocity += p.Acceleration;
 		emitter->settings.ParticleUpdateFunc(&p);
 	}
 }
