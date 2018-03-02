@@ -49,7 +49,8 @@ void GLRenderingDevice::RenderWorld(World* world)
 		switch (renderingMode)
 		{
 			case eRenderingModeType::LIT:
-				RenderLit(world, rect, cameraCmp);
+				// RenderLit(world, rect, cameraCmp);
+				RenderTKGJ(world, rect, cameraCmp);
 				break;
 
 			case eRenderingModeType::UNLIT:
@@ -309,6 +310,68 @@ void GLRenderingDevice::RenderLit(World* world, const AARect& rect, CameraCompon
 
 	GeometryRenderingPasses[eGeometryRenderPassType::TRANSPARENT_GEOMETRY]->Run(world, cameraCmp, rect);
 	
+	GeometryRenderingPasses[eGeometryRenderPassType::TRANSPARENT_SPRITESHEET]->Run(world, cameraCmp, rect);
+
+	GeometryRenderingPasses[eGeometryRenderPassType::PARTICLES]->Run(world, cameraCmp, rect);
+
+	glDisable(GL_BLEND);
+
+	glDisable(GL_DEPTH_TEST);
+
+	// Run postprocess passes
+	// for (ePostprocessRenderPassType type : IterateEnum<ePostprocessRenderPassType>())
+
+
+	// Render text
+	GeometryRenderingPasses[eGeometryRenderPassType::TEXT_2D]->Run(world, cameraCmp, rect);
+
+	if (post && post->UseFgShader)
+		PostprocessRenderingPasses[ePostprocessRenderPassType::FOREGROUND]->Run(world, cameraCmp, rect);
+	else
+		PostprocessRenderingPasses[ePostprocessRenderPassType::FOREGROUND_LIGHT]->Run(world, cameraCmp, rect);
+}
+
+void GLRenderingDevice::RenderTKGJ(World* world, const AARect& rect, CameraComponent* cameraCmp) const
+{
+	PostprocessSettingsComponent* post = cameraCmp->GetSibling<PostprocessSettingsComponent>();
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+
+	// if (post && post->UseBgShader)
+		PostprocessRenderingPasses[ePostprocessRenderPassType::BACKGROUND]->Run(world, cameraCmp, rect);
+	// else
+	// 	PostprocessRenderingPasses[ePostprocessRenderPassType::BACKGROUND_LIGHT]->Run(world, cameraCmp, rect);
+
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	// Render meshes with blin-phong shader
+	GeometryRenderingPasses[eGeometryRenderPassType::BLINN_PHONG]->Run(world, cameraCmp, rect);
+
+	// Render meshes with unlit shader
+	GeometryRenderingPasses[eGeometryRenderPassType::UNLIT]->Run(world, cameraCmp, rect);
+
+	// glEnable(GL_DEPTH_TEST);
+	// glDisable(GL_CULL_FACE);
+	// GeometryRenderingPasses[eGeometryRenderPassType::SKYBOX]->Run(world, cameraCmp, rect);
+
+	glDepthMask(GL_FALSE);
+
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	// TODO test these blending options
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+	// glBlendFunc(GL_ONE, GL_ONE);
+	// glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+
+	GeometryRenderingPasses[eGeometryRenderPassType::TRANSPARENT_GEOMETRY]->Run(world, cameraCmp, rect);
+
 	GeometryRenderingPasses[eGeometryRenderPassType::TRANSPARENT_SPRITESHEET]->Run(world, cameraCmp, rect);
 
 	GeometryRenderingPasses[eGeometryRenderPassType::PARTICLES]->Run(world, cameraCmp, rect);

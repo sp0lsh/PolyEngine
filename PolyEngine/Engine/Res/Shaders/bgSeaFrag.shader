@@ -10,7 +10,7 @@ uniform mat4 uCameraRotation;
 in vec2 vTexCoord;
 out vec4 o_color;
 
-#define CASHETES 1
+// #define CASHETES
 
 /*
 * "Seascape" by Alexander Alekseev aka TDM - 2014
@@ -18,14 +18,14 @@ out vec4 o_color;
 * Contact: tdmaav@gmail.com
 */
 
-const int NUM_STEPS = 6; // 8
+const int NUM_STEPS = 8; // 8
 const float PI = 3.141592;
 const float EPSILON = 1e-3;
 #define EPSILON_NRM (0.1 / uResolution.x)
 
 // sea
-const int ITER_GEOMETRY = 2; // 3
-const int ITER_FRAGMENT = 4; // 5
+const int ITER_GEOMETRY = 3; // 3
+const int ITER_FRAGMENT = 5; // 5
 const float SEA_HEIGHT = 0.6;
 const float SEA_CHOPPY = 4.0;
 const float SEA_SPEED = 0.8;
@@ -168,10 +168,69 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
 	return tmid;
 }
 
+vec4 renderWater(vec3 ro, vec3 rd)
+{
+    vec3 p;
+    heightMapTracing(ro, rd, p);
+    vec3 dist = p - ro;
+    vec3 n = getNormal(p, dot(dist, dist) * EPSILON_NRM);
+    vec3 light = normalize(vec3(0.0, 1.0, 0.8));
+             
+    // color
+    vec3 color = mix(
+        getSkyColor(rd),
+        getSeaColor(p, n, light, rd, dist),
+    	pow(smoothstep(0.0, -0.05, rd.y), 0.3));
+    
+    // float depth = dot(rd, dist) * length(dist);
+    float depth = length(dist);
+    return vec4(color, depth);
+}
+
+float mapShips(vec3 p)
+{
+    float s0 = length(p - vec3(-2.0, 1.0, 0.0)) - 1.0;
+    float s1 = length(max(abs(p - vec3(2.0, 1.0, 0.0)) - vec3(1.0), 0.0));
+    
+    return min(s0, s1);
+}
+
+vec3 getNormalShips(vec3 p)
+{
+    vec2 e = vec2(1.0, -1.0) * 0.5773 * 0.0005;
+    return normalize(e.xyy * mapShips(p + e.xyy) +
+					  e.yyx * mapShips(p + e.yyx) +
+					  e.yxy * mapShips(p + e.yxy) +
+				  	  e.xxx * mapShips(p + e.xxx));
+}
+
+vec4 renderShips(vec3 ro, vec3 rd)
+{
+    vec3 color = vec3(0.0);
+    vec3 p = vec3(0.0);
+    float t = 0.0;
+    float d = 0.0;
+    for (int i = 0; i < 64; ++i)
+    {
+        t += (d = mapShips(p = ro + rd * t));
+        if (t < 0.0001)
+        {
+            break;
+        }
+    }
+    
+    vec3 n = getNormalShips(p);
+    color = n;
+//     color = p;
+
+    float dist = length(p - ro);
+    return vec4(color, dist);
+}
+
 void main()
 {
 
-#if CASHETES
+#ifdef CASHETES
 	vec2 cp = -1.0 + 2.0 * vTexCoord.xy;
 	cp.x *= uResolution.x / uResolution.y;
 	float cashetes = step(abs(cp.y)*2.39, uResolution.x / uResolution.y);
@@ -186,31 +245,25 @@ void main()
 	uv.x *= uResolution.x / uResolution.y;
 	float time = uTime * 0.3;
 
-	// ray
-	// vec3 ang = vec3(sin(time*3.0)*0.1, sin(time)*0.2 + 0.3, time);
-	// vec3 ori = vec3(0.0, 3.5, time*5.0);
-	// vec3 dir = normalize(vec3(uv.xy, -2.0)); dir.z += length(uv) * 0.15;
-	// dir = normalize(dir) *fromEuler(ang);
-
-	vec3 ori = uCameraPosition.xyz;
-	vec3 dir = normalize(vec3(uv.xy, -2.0));
-	dir.z += length(uv) * 0.15;
-	dir = (uCameraRotation * vec4(dir, 1.0)).xyz;
-	dir = normalize(dir);
+	vec3 ro = uCameraPosition.xyz;
+	vec3 rd = normalize(vec3(uv.xy, -4.0));
+	rd.z += length(uv) * 0.15;
+	rd = (uCameraRotation * vec4(rd, 1.0)).xyz;
+	rd = normalize(rd);
 
 	// tracing
-	vec3 p;
-	heightMapTracing(ori, dir, p);
-	vec3 dist = p - ori;
-	vec3 n = getNormal(p, dot(dist, dist) * EPSILON_NRM);
-	vec3 light = normalize(vec3(0.0, 1.0, 0.8));
-
-	// color
-	vec3 color = mix(
-		getSkyColor(dir),
-		getSeaColor(p, n, light, dir, dist),
-		pow(smoothstep(0.0, -0.05, dir.y), 0.3));
+    vec4 water = renderWater(ro, rd);
+    // water.rgb *= fract(1.0 *water.a); // debug depth
+    
+    vec4 ships = renderShips(ro, rd);
+    
+    vec3 color = ships.a < water.a ? ships.rgb : water.rgb;
+    // vec3 color = ships.rgb;
+    
+    // post
+    color = mix(color, smoothstep(color, vec3(0.0), vec3(1.0)), 0.5);
+	color = pow(color, vec3(0.45));
 
 	// post
-	o_color = vec4(pow(color, vec3(0.75)), 1.0);
+    o_color = vec4(color, 1.0);
 }

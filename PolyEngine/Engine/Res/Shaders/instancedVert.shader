@@ -23,13 +23,13 @@ void main()
     
 	vec4 VertexInInstance = vec4(aVertexInInstance, 1.0);
 
-	// float _ScaleY = aModelFromInstance[0][0];
-    // float _ScaleX = aModelFromInstance[1][1];
-    // vec4 VertexInScreen = uScreenFromView * (uViewFromWorld * uWorldFromModel * aModelFromInstance * vec4(0.0, 0.0, 0.0, 1.0)
- 	// 	+ vec4(VertexInInstance.x, VertexInInstance.y, 0.0, 0.0)
-    //     * vec4(_ScaleX, _ScaleY, 1.0, 1.0));
+	float _ScaleY = aModelFromInstance[0][0];
+    float _ScaleX = aModelFromInstance[1][1];
+    vec4 VertexInScreen = uScreenFromView * (uViewFromWorld * uWorldFromModel * aModelFromInstance * vec4(0.0, 0.0, 0.0, 1.0)
+ 	 	+ vec4(VertexInInstance.x, VertexInInstance.y, 0.0, 0.0)
+         * vec4(_ScaleX, _ScaleY, 1.0, 1.0));
 
-    vec4 VertexInScreen = uScreenFromView * uViewFromWorld * uWorldFromModel * aModelFromInstance * VertexInInstance;
+    // vec4 VertexInScreen = uScreenFromView * uViewFromWorld * uWorldFromModel * aModelFromInstance * VertexInInstance;
 	
     gl_Position = VertexInScreen;
     vTexCoord = aTexCoord;

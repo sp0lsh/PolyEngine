@@ -85,6 +85,7 @@ namespace Poly
 
 		void CleanUpResources();
 
+		void RenderTKGJ(World* world, const AARect& rect, CameraComponent* cameraCmp) const;
 		void RenderLit(World* world, const AARect& rect, CameraComponent* cameraCmp) const;
 		void RenderUnlit(World* world, const AARect& rect, CameraComponent* cameraCmp) const;
 		void RenderWireframe(World* world, const AARect& rect, CameraComponent* cameraCmp) const;
