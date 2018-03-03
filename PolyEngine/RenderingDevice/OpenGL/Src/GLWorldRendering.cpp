@@ -339,10 +339,10 @@ void GLRenderingDevice::RenderTKGJ(World* world, const AARect& rect, CameraCompo
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
 
-	// if (post && post->UseBgShader)
+	if (post && post->UseBgShader)
 		PostprocessRenderingPasses[ePostprocessRenderPassType::BACKGROUND]->Run(world, cameraCmp, rect);
-	// else
-	// 	PostprocessRenderingPasses[ePostprocessRenderPassType::BACKGROUND_LIGHT]->Run(world, cameraCmp, rect);
+	else
+	 	PostprocessRenderingPasses[ePostprocessRenderPassType::BACKGROUND_LIGHT]->Run(world, cameraCmp, rect);
 
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);

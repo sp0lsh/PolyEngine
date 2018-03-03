@@ -22,6 +22,8 @@ namespace Poly {
 		float Stripes = 0.15f;
 		float Vignette = 0.15f;
 
+		Vector ShipPos = Vector(0.0f, 0.0f, 0.0f);
+
 	};
 
 	REGISTER_COMPONENT(ComponentsIDGroup, PostprocessSettingsComponent)

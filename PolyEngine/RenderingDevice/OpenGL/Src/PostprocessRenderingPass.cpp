@@ -57,7 +57,8 @@ void PostprocessRenderingPass::OnRun(World* world, const CameraComponent* camera
 		GetProgram().SetUniform("uSaturationPower",					PostprocessSettings->Saturation);
 		GetProgram().SetUniform("uGrainPower",						PostprocessSettings->Grain);
 		GetProgram().SetUniform("uStripesPower",					PostprocessSettings->Stripes);
-			
+		
+		GetProgram().SetUniform("uShipPos", PostprocessSettings->ShipPos);
 		
 		//gConsole.LogInfo("void PostprocessRenderingPass::OnRun: UseCashetes: {}", PostprocessSettings->UseCashetes);
 	}

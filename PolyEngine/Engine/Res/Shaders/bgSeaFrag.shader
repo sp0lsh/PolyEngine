@@ -7,6 +7,8 @@ uniform vec2 uResolution;
 uniform vec4 uCameraPosition;
 uniform mat4 uCameraRotation;
 
+uniform vec4 uShipPos;
+
 in vec2 vTexCoord;
 out vec4 o_color;
 
@@ -190,7 +192,7 @@ vec4 renderWater(vec3 ro, vec3 rd)
 float mapShips(vec3 p)
 {
     float s0 = length(p - vec3(-2.0, 1.0, 0.0)) - 1.0;
-    float s1 = length(max(abs(p - vec3(2.0, 1.0, 0.0)) - vec3(1.0), 0.0));
+    float s1 = length(max(abs(p -vec3(0.0, 1.0, 0.0) -uShipPos.xyz) - vec3(1.0), 0.0));
     
     return min(s0, s1);
 }
@@ -262,7 +264,7 @@ void main()
     
     // post
     color = mix(color, smoothstep(color, vec3(0.0), vec3(1.0)), 0.5);
-	color = pow(color, vec3(0.45));
+	// color = pow(color, vec3(0.45));
 
 	// post
     o_color = vec4(color, 1.0);

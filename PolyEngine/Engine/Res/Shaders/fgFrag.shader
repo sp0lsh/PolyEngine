@@ -361,7 +361,7 @@ void main()
 	
 	// grain
     // float FGanim = 0.01 * smoothstep(-0.8, 0.8, sin(5.0 * uTime));
-    color.rgb *= 1.0 - 0.2 * filmGrainColor(0.001 * uv, uTime).rgb;
+    color.rgb *= 1.0 - 0.1 * filmGrainColor(0.01 * uv, uTime).rgb;
 
 	// Vinette
     // color.rgb = vec3(1.0); // uncomment to see only vignette
