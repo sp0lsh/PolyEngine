@@ -8,6 +8,7 @@ uniform vec4 uCameraPosition;
 uniform mat4 uCameraRotation;
 
 uniform vec4 uShipPos;
+uniform vec4 uShipFwd;
 
 in vec2 vTexCoord;
 out vec4 o_color;
@@ -36,6 +37,10 @@ const vec3 SEA_BASE = vec3(0.1, 0.19, 0.22);
 const vec3 SEA_WATER_COLOR = vec3(0.8, 0.9, 0.6);
 #define SEA_TIME (1.0 + uTime * SEA_SPEED)
 const mat2 octave_m = mat2(1.6, 1.2, -1.2, 1.6);
+
+const vec3 SUN_POWER = vec3(1.0, 0.9, 0.6) * 750.0;
+const vec3 albedo = 0.1 * vec3(0.95, 0.16, 0.015);
+const vec3 LIGHT_DIR = normalize(vec3(0.0, 1.0, 0.8));
 
 // math
 mat3 fromEuler(vec3 ang) {
@@ -176,7 +181,7 @@ vec4 renderWater(vec3 ro, vec3 rd)
     heightMapTracing(ro, rd, p);
     vec3 dist = p - ro;
     vec3 n = getNormal(p, dot(dist, dist) * EPSILON_NRM);
-    vec3 light = normalize(vec3(0.0, 1.0, 0.8));
+    vec3 light = LIGHT_DIR;
              
     // color
     vec3 color = mix(
@@ -184,17 +189,78 @@ vec4 renderWater(vec3 ro, vec3 rd)
         getSeaColor(p, n, light, rd, dist),
     	pow(smoothstep(0.0, -0.05, rd.y), 0.3));
     
-    // float depth = dot(rd, dist) * length(dist);
-    float depth = length(dist);
+    float depth = dot(rd, dist) * length(dist);
+    // float depth = length(dist);
     return vec4(color, depth);
+}
+
+float sdCylinder(vec3 p, vec2 h)
+{
+    vec2 d = abs(vec2(length(p.xz), p.y)) - h;
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+float sdBox(vec3 p, vec3 b)
+{
+    vec3 d = abs(p) - b;
+    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+}
+
+// polynomial smooth min (k = 0.1);
+float smin(float a, float b, float k)
+{
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+    return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+float sdShip(vec3 p)
+{
+    float s2 = sdCylinder(p - vec3(0.85, 2.0, 0.0), vec2(0.35, 1.0));
+    float s4 = sdBox(p - vec3(-0.2, 1.7, 0.0), vec3(0.6, 0.4, 0.8));
+    float s5 = sdBox(p - vec3(1.3, 1.6, 0.0), vec3(1.0, 0.2, 0.6));
+    float s6 = sdBox(p - vec3(-0.3, 2.1, 0.0), vec3(0.7, 0.05, 0.82));
+    
+    p.xz *= 1.0 - 0.25 * (p.y - 0.3);
+    p.y -= 0.05 * (p.x * p.x) * max(-p.x, 0.0);
+    
+    vec3 p0 = p;
+    p0.z = abs(p0.z);
+    p0.z = p0.z + 0.5;
+    float s1 = sdBox(p - vec3(1.0, 1.0, 0.0), vec3(1.0, 0.5, 0.85));
+    p0.x *= 0.7;
+    float s3 = sdCylinder(p0 - vec3(0.0, 1.0, 0.0), vec2(1.35, 0.5));
+    
+    float s = smin(s1, s3, 0.1);
+    s = min(s, s2);
+    s = min(s, s3);
+    s = min(s, s4);
+    s = min(s, s5);
+    s = min(s, s6);
+    s -= 0.02;
+    return s;
+}
+
+mat3 lookAt(in vec3 ro, in vec3 ta, float cr)
+{
+    vec3 cw = normalize(ta - ro);
+    vec3 cp = vec3(sin(cr), cos(cr), 0.0);
+    vec3 cu = normalize(cross(cw, cp));
+    vec3 cv = normalize(cross(cu, cw));
+    return mat3(cu, cv, cw);
+}
+
+mat2 rot2D(float a)
+{
+    float s = sin(a);
+    float c = cos(a);
+    return mat2(c, s, -s, c);
 }
 
 float mapShips(vec3 p)
 {
-    float s0 = length(p - vec3(-2.0, 1.0, 0.0)) - 1.0;
-    float s1 = length(max(abs(p -vec3(0.0, 1.0, 0.0) -uShipPos.xyz) - vec3(1.0), 0.0));
-    
-    return min(s0, s1);
+    vec3 ps = p - uShipPos.xyz;
+    ps.xz *= rot2D(-uShipPos.w);
+    return sdShip(ps);
 }
 
 vec3 getNormalShips(vec3 p)
@@ -206,27 +272,67 @@ vec3 getNormalShips(vec3 p)
 				  	  e.xxx * mapShips(p + e.xxx));
 }
 
+float calcAO(in vec3 pos, in vec3 nor)
+{
+    float sca = 10.2;
+    float hr = 0.05;
+    float dd = mapShips(nor * 0.15 + pos);
+    return clamp(1.0 + (dd - hr) * sca, 0.0, 1.0);
+}
+
+float softshadow(in vec3 ro, in vec3 rd, in float mint, in float tmax)
+{
+    float res = 1.0;
+    float t = mint;
+    for (int i = 0; i < 14; i++)
+    {
+        float h = mapShips(ro + rd * t);
+        res = min(res, 8. * h / t);
+        t += clamp(h, 0.08, 0.25);
+        if (res < 0.001 || t > tmax)
+            break;
+    }
+    return max(0.0, res);
+}
+
+float Schlick(float f0, float VoH)
+{
+    return f0 + (1. - f0) * pow(1.0 - VoH, 5.0);
+}
+
+vec3 renderCube(vec3 pos, vec3 sun_direction, vec3 dir)
+{
+    vec3 nor = getNormalShips(pos);
+    float occ = calcAO(pos, nor);
+    float NoL = max(0.0, dot(sun_direction, nor));
+    float sunShadow = softshadow(pos, sun_direction, 0.001, 2.0);
+    vec3 color = 0.6 * NoL * SUN_POWER * albedo * sunShadow / PI; // diffuse
+    color += albedo * occ * vec3(0.3, 0.6, 1.0) * 35.0 * (0.75 + 0.25 * nor.y); // skylight
+    color += Schlick(0.04, max(0.0, dot(nor, -dir))) * max(0.0, occ - 0.7) / 0.7; // specular
+    return color;
+}
+
 vec4 renderShips(vec3 ro, vec3 rd)
 {
     vec3 color = vec3(0.0);
     vec3 p = vec3(0.0);
     float t = 0.0;
     float d = 0.0;
-    for (int i = 0; i < 64; ++i)
+    for (int i = 0; i < 200; ++i)
     {
         t += (d = mapShips(p = ro + rd * t));
-        if (t < 0.0001)
+        if (t < 0.01)
         {
             break;
         }
     }
+        
+    color = renderCube(p, LIGHT_DIR, rd);
     
-    vec3 n = getNormalShips(p);
-    color = n;
-//     color = p;
-
-    float dist = length(p - ro);
-    return vec4(color, dist);
+    vec3 pos = ro + rd * t;
+    vec3 dist = pos - ro;
+    float depth = dot(rd, dist) * length(dist);
+    return vec4(color, depth);
 }
 
 void main()
@@ -248,7 +354,7 @@ void main()
 	float time = uTime * 0.3;
 
 	vec3 ro = uCameraPosition.xyz;
-	vec3 rd = normalize(vec3(uv.xy, -4.0));
+	vec3 rd = normalize(vec3(uv.xy, -2.0));
 	rd.z += length(uv) * 0.15;
 	rd = (uCameraRotation * vec4(rd, 1.0)).xyz;
 	rd = normalize(rd);
@@ -258,9 +364,10 @@ void main()
     // water.rgb *= fract(1.0 *water.a); // debug depth
     
     vec4 ships = renderShips(ro, rd);
-    
+    // ships.rgb *= fract(1.0 * ships.a); // debug depth
+
+    // float depthFade = clamp(max(0.0, water.a - ships.a), 0.0, 1.0);
     vec3 color = ships.a < water.a ? ships.rgb : water.rgb;
-    // vec3 color = ships.rgb;
     
     // post
     color = mix(color, smoothstep(color, vec3(0.0), vec3(1.0)), 0.5);

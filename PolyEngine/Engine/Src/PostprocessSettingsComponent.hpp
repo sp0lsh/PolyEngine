@@ -23,6 +23,7 @@ namespace Poly {
 		float Vignette = 0.15f;
 
 		Vector ShipPos = Vector(0.0f, 0.0f, 0.0f);
+		Vector ShipFwd = Vector(0.0f, 0.0f, 0.0f);
 
 	};
 
