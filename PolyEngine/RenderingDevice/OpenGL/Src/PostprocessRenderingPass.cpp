@@ -59,6 +59,7 @@ void PostprocessRenderingPass::OnRun(World* world, const CameraComponent* camera
 		GetProgram().SetUniform("uStripesPower",					PostprocessSettings->Stripes);
 		
 		GetProgram().SetUniform("uShipPos", PostprocessSettings->ShipPos);
+		GetProgram().SetUniform("uShipAngleY", PostprocessSettings->ShipAngleY);
 		
 		//gConsole.LogInfo("void PostprocessRenderingPass::OnRun: UseCashetes: {}", PostprocessSettings->UseCashetes);
 	}

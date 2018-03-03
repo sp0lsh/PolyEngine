@@ -8,7 +8,7 @@ uniform vec4 uCameraPosition;
 uniform mat4 uCameraRotation;
 
 uniform vec4 uShipPos;
-uniform vec4 uShipFwd;
+uniform float uShipAngleY;
 
 in vec2 vTexCoord;
 out vec4 o_color;
@@ -215,6 +215,7 @@ float smin(float a, float b, float k)
 
 float sdShip(vec3 p)
 {
+    p.x = -p.x;
     float s2 = sdCylinder(p - vec3(0.85, 2.0, 0.0), vec2(0.35, 1.0));
     float s7 = sdCylinder(p - vec3(0.85, 2.2, 0.0), vec2(0.3, 1.0));
     float s4 = sdBox(p - vec3(-0.2, 1.7, 0.0), vec3(0.6, 0.4, 0.8));
@@ -242,15 +243,6 @@ float sdShip(vec3 p)
     return s;
 }
 
-mat3 lookAt(in vec3 ro, in vec3 ta, float cr)
-{
-    vec3 cw = normalize(ta - ro);
-    vec3 cp = vec3(sin(cr), cos(cr), 0.0);
-    vec3 cu = normalize(cross(cw, cp));
-    vec3 cv = normalize(cross(cu, cw));
-    return mat3(cu, cv, cw);
-}
-
 mat2 rot2D(float a)
 {
     float s = sin(a);
@@ -261,7 +253,7 @@ mat2 rot2D(float a)
 float mapShips(vec3 p)
 {
     vec3 ps = p - uShipPos.xyz;
-    ps.xz *= rot2D(-uShipPos.w);
+    ps.xz *= rot2D(uShipAngleY);
     return sdShip(ps);
 }
 
@@ -356,8 +348,8 @@ void main()
 	float time = uTime * 0.3;
 
 	vec3 ro = uCameraPosition.xyz;
-	vec3 rd = normalize(vec3(uv.xy, -2.0));
-	rd.z += length(uv) * 0.15;
+    vec3 rd = normalize(vec3(uv.xy, -2.0));
+	// rd.z += length(uv) * 0.15;
 	rd = (uCameraRotation * vec4(rd, 1.0)).xyz;
 	rd = normalize(rd);
 

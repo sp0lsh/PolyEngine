@@ -22,8 +22,8 @@ namespace Poly {
 		float Stripes = 0.15f;
 		float Vignette = 0.15f;
 
-		Vector ShipPos = Vector(0.0f, 0.0f, 0.0f);
-		Vector ShipFwd = Vector(0.0f, 0.0f, 0.0f);
+		Vector	ShipPos = Vector(0.0f, 0.0f, 0.0f);
+		float	ShipAngleY = 0.0f;
 
 	};
 

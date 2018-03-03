@@ -376,6 +376,8 @@ void GLRenderingDevice::RenderTKGJ(World* world, const AARect& rect, CameraCompo
 
 	GeometryRenderingPasses[eGeometryRenderPassType::PARTICLES]->Run(world, cameraCmp, rect);
 
+	GeometryRenderingPasses[eGeometryRenderPassType::IMMEDIATE_DEBUG]->Run(world, cameraCmp, rect);
+
 	glDisable(GL_BLEND);
 
 	glDisable(GL_DEPTH_TEST);
