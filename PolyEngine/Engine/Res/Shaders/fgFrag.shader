@@ -17,6 +17,8 @@ uniform float uStripesPower;
 uniform float uVinettePower;
 uniform float uGrainPower;
 
+uniform float uTimeOfDeath;
+
 // based on aberation by hornet
 // https://www.shadertoy.com/view/XssGz8
 // To the extent possible under law,
@@ -245,16 +247,6 @@ vec3 render(vec2 uv)
 	return srgb2lin(texture(i_color, uv).rgb);
 }
 
-vec3 Tonemap_ACES(const vec3 x) {
-	// Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
-	const float a = 2.51;
-	const float b = 0.03;
-	const float c = 2.43;
-	const float d = 0.59;
-	const float e = 0.14;
-	return (x * (a * x + b)) / (x * (c * x + d) + e);
-}
-
 float stripes(vec2 uv)
 {
 	return mix(0.9, 1.0, floor(0.5 + fract(uv.y*0.25*uResolution.y)));
@@ -315,7 +307,7 @@ vec3 filmGrainColor(vec2 uv, float offset)
     return r * 0.25;
 }
 
-vec3 sharpen(vec2 uv)
+vec3 sharpen(vec2 uv, float weigth)
 { // by NickWest (lslGRr)
     vec2 step = 1.0 / uResolution.xy;
     float scale = 1.5;
@@ -325,7 +317,7 @@ vec3 sharpen(vec2 uv)
     vec3 texD = texture(i_color, uv + vec2(step.x, step.y) * scale).rgb;
     vec3 around = 0.25 * (texA + texB + texC + texD);
     vec3 center = texture(i_color, uv).rgb;
-    vec3 col = center + (center - around) * 0.2;
+    vec3 col = center + (center - around) * weigth;
     return col;
 }
 
@@ -340,25 +332,54 @@ vec2 barrelDistortion(vec2 coord, float amt, float zoom)
     
 }
 
-void main()
+vec3 tonemapACES(vec3 x)
 {
-	vec2 uv = vTexCoord;
-    uv = barrelDistortion(uv, 0.1, 0.94);
+    float a = 2.51;
+    float b = 0.03;
+    float c = 2.43;
+    float d = 0.59;
+    float e = 0.14;
+    return (x * (a * x + b)) / (x * (c * x + d) + e);
+}
+
+vec3 DeathFX(vec3 color, vec2 uv)
+{
+    color.rgb = sharpen(uv, 0.5);
+
+    float exposure = 0.5 + 0.5 * (1.0 + 0.2 * sin(0.5 * uTime) * sin(1.8 * uTime));
+    color.rgb = tonemapACES(exposure * color);
     
-    color.rgb = sharpen(uv);
+    float luminance = dot(color, vec3(0.3, 0.6, 0.08));
+    color = vec3(luminance);
 
-    // color.rgb = 0.5 * pow(color.rgb, vec3(1.2));
+    // color.rgb = pow(color.rgb, vec3(4.0));
+    color = smoothstep(0.2, 0.8, color);
 
-	// color saturation
-	// color.rgb = Saturation(color.rgb, 0.9);
+	// grain
+    // float FGanim = 0.01 * smoothstep(-0.8, 0.8, sin(5.0 * uTime));
+    color *= 1.0 - (0.1 + 0.1) * filmGrainColor(0.01 * uv, uTime).rgb;
 
-	// tonemapper
-	// color.rgb = Tonemap_ACES(color.rgb);
-	
-	// color temperature
-	// color.rgb = colorTemperature(color.rgb, mix(6500.0, uColorTempValue, uColorTempPower));
-	
-	
+	// Vinette
+    // color.rgb = vec3(1.0); // uncomment to see only vignette
+    vec2 v = 2. * (uv - .5);
+    v = clamp((v * .5) + .5, 0., 1.);
+    
+    color *=  pow(16.0 * v.x * v.y * (1.0 - v.x) * (1.0 - v.y), 0.5);
+    color *= 1.5;
+
+    return color;
+}
+
+vec3 DefaultFX(vec3 color, vec2 uv)
+{
+    color.rgb = sharpen(uv, 0.1);
+
+    float exposure = 1.0; //  +0.1 * (1.0 + 0.2 * sin(0.5 * uTime) * sin(1.8 * uTime));
+    color.rgb = tonemapACES(exposure * color.rgb);
+    
+    // color.rgb = pow(color.rgb, vec3(4.0));
+    color.rgb = smoothstep(vec3(0.0), vec3(1.0), color.rgb);
+
 	// grain
     // float FGanim = 0.01 * smoothstep(-0.8, 0.8, sin(5.0 * uTime));
     color.rgb *= 1.0 - 0.1 * filmGrainColor(0.01 * uv, uTime).rgb;
@@ -368,7 +389,25 @@ void main()
     vec2 v = 2. * (uv - .5);
     v = clamp((v * .5) + .5, 0., 1.);
     color.rgb *= 0.25 + pow(16.0 * v.x * v.y * (1.0 - v.x) * (1.0 - v.y), 0.25);
-	
+
+    return color;
+}
+
+void main()
+{
+	vec2 uv = vTexCoord;
+    uv = barrelDistortion(uv, 0.1, 0.94);
+    // float shake = pow(1.0 - fract(uTime), 2.0);
+    float deathWeigth = step(0.0, uTimeOfDeath) * clamp(smoothstep(0.0, 0.5, uTime - uTimeOfDeath), 0.0, 1.0);
+    
+    // float shake = smoothstep(0.2, 1.0, 1.0 - fract(uTime));
+    float shake = deathWeigth * smoothstep(0.2, 1.0, clamp(1.0 - deathWeigth, 0.0, 1.0));
+    uv += vec2(0.0, 0.1) * shake * sin(200.0*uTime);
+    
+    // float deathWeigth = smoothstep(-0.5, 0.5, sin(2.0 * uTime));
+    color.rgb = mix(DefaultFX(color.rgb, uv), DeathFX(color.rgb, uv), deathWeigth);
+    
+    // color.rgb *= shake;
 	// gamma 
 	color.rgb = pow(color.rgb, vec3(0.4545));
 }

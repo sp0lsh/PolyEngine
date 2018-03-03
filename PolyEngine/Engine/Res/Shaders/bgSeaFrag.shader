@@ -10,6 +10,8 @@ uniform mat4 uCameraRotation;
 uniform vec4 uShipPos;
 uniform float uShipAngleY;
 
+uniform float uTimeOfDeath;
+
 in vec2 vTexCoord;
 out vec4 o_color;
 
@@ -363,10 +365,6 @@ void main()
     // float depthFade = clamp(max(0.0, water.a - ships.a), 0.0, 1.0);
     vec3 color = ships.a < water.a ? ships.rgb : water.rgb;
     
-    // post
-    color = mix(color, smoothstep(color, vec3(0.0), vec3(1.0)), 0.5);
-	// color = pow(color, vec3(0.45));
-
 	// post
     o_color = vec4(color, 1.0);
 }

@@ -25,6 +25,8 @@ namespace Poly {
 		Vector	ShipPos = Vector(0.0f, 0.0f, 0.0f);
 		float	ShipAngleY = 0.0f;
 
+		float TimeOfDeath = -1.0f;
+
 	};
 
 	REGISTER_COMPONENT(ComponentsIDGroup, PostprocessSettingsComponent)
