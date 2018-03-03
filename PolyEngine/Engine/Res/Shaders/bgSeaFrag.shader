@@ -216,6 +216,7 @@ float smin(float a, float b, float k)
 float sdShip(vec3 p)
 {
     float s2 = sdCylinder(p - vec3(0.85, 2.0, 0.0), vec2(0.35, 1.0));
+    float s7 = sdCylinder(p - vec3(0.85, 2.2, 0.0), vec2(0.3, 1.0));
     float s4 = sdBox(p - vec3(-0.2, 1.7, 0.0), vec3(0.6, 0.4, 0.8));
     float s5 = sdBox(p - vec3(1.3, 1.6, 0.0), vec3(1.0, 0.2, 0.6));
     float s6 = sdBox(p - vec3(-0.3, 2.1, 0.0), vec3(0.7, 0.05, 0.82));
@@ -236,6 +237,7 @@ float sdShip(vec3 p)
     s = min(s, s4);
     s = min(s, s5);
     s = min(s, s6);
+    s = max(-s7, s);
     s -= 0.02;
     return s;
 }
