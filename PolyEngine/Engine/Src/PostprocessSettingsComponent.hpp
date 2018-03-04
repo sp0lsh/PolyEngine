@@ -29,6 +29,7 @@ namespace Poly {
 		Dynarray<float>	EnemyShipAngleY;
 
 		float TimeOfDeath = -1.0f;
+		float TimeOfAction = -1.0f;
 
 	};
 

@@ -62,12 +62,13 @@ void PostprocessRenderingPass::OnRun(World* world, const CameraComponent* camera
 		GetProgram().SetUniform("uShipAngleY", PostprocessSettings->ShipAngleY);
 
 		GetProgram().SetUniform("uTimeOfDeath", PostprocessSettings->TimeOfDeath);
+		GetProgram().SetUniform("uTimeOfAction", PostprocessSettings->TimeOfAction);
 		
 		const int MaxEnemies = 5;
 		int EnemyCount = PostprocessSettings->EnemyShipPos.GetSize();
 		EnemyCount = Clamp(EnemyCount, 0, MaxEnemies);
 		GetProgram().SetUniform("uEnemyCount", EnemyCount);
-		gConsole.LogInfo("void PostprocessRenderingPass::OnRun: EnemyCount: {}", EnemyCount);
+		// gConsole.LogInfo("void PostprocessRenderingPass::OnRun: EnemyCount: {}", EnemyCount);
 
 		if (EnemyCount > 0) {
 			GetProgram().SetUniform("uEnemyShipPos0", PostprocessSettings->EnemyShipPos[0]);
