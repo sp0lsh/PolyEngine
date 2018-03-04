@@ -18,6 +18,7 @@ uniform float uVinettePower;
 uniform float uGrainPower;
 
 uniform float uTimeOfDeath;
+uniform float uTimeOfAction;
 
 // based on aberation by hornet
 // https://www.shadertoy.com/view/XssGz8
@@ -374,7 +375,7 @@ vec3 DefaultFX(vec3 color, vec2 uv)
 {
     color.rgb = sharpen(uv, 0.1);
 
-    float exposure = 1.0; //  +0.1 * (1.0 + 0.2 * sin(0.5 * uTime) * sin(1.8 * uTime));
+    float exposure = 1.0 + 0.05 * (0.8 + 0.1 * sin(0.5 * uTime) * sin(1.8 * uTime));
     color.rgb = tonemapACES(exposure * color.rgb);
     
     // color.rgb = pow(color.rgb, vec3(4.0));
@@ -393,19 +394,51 @@ vec3 DefaultFX(vec3 color, vec2 uv)
     return color;
 }
 
+vec3 ActionFX(vec3 color, vec2 uv)
+{
+    color.rgb = sharpen(uv, 0.2);
+
+    float exposure = 1.5;
+    color.rgb = tonemapACES(exposure * color);
+    
+    float luminance = dot(color, vec3(0.3, 0.6, 0.08));
+    color = mix(color, vec3(luminance), 0.2);
+
+    // color.rgb = pow(color.rgb, vec3(4.0));
+    color = smoothstep(0.1, 0.9, color);
+
+	// grain
+    // float FGanim = 0.01 * smoothstep(-0.8, 0.8, sin(5.0 * uTime));
+    color.rgb *= 1.0 - 0.1 * filmGrainColor(0.01 * uv, uTime).rgb;
+
+	// Vinette
+    // color.rgb = vec3(1.0); // uncomment to see only vignette
+    vec2 v = 2. * (uv - .5);
+    v = clamp((v * .5) + .5, 0., 1.);
+    
+    color *= pow(16.0 * v.x * v.y * (1.0 - v.x) * (1.0 - v.y), 0.3);
+
+    return color;
+}
+
+
 void main()
 {
 	vec2 uv = vTexCoord;
     uv = barrelDistortion(uv, 0.1, 0.94);
     // float shake = pow(1.0 - fract(uTime), 2.0);
     float deathWeigth = step(0.0, uTimeOfDeath) * clamp(smoothstep(0.0, 0.5, uTime - uTimeOfDeath), 0.0, 1.0);
+    float actionWeigth = step(0.0, uTimeOfAction) * clamp(smoothstep(0.0, 0.25, uTime - uTimeOfAction), 0.0, 1.0);
     
     // float shake = smoothstep(0.2, 1.0, 1.0 - fract(uTime));
-    float shake = deathWeigth * smoothstep(0.2, 1.0, clamp(1.0 - deathWeigth, 0.0, 1.0));
+    float shakeDeath = deathWeigth * smoothstep(0.2, 1.0, clamp(1.0 - deathWeigth, 0.0, 1.0));
+    float shakeAction = actionWeigth * smoothstep(0.2, 1.0, clamp(1.0 - actionWeigth, 0.0, 1.0));
+    float shake = max(shakeAction, shakeDeath);
     uv += vec2(0.0, 0.1) * shake * sin(200.0*uTime);
     
     // float deathWeigth = smoothstep(-0.5, 0.5, sin(2.0 * uTime));
-    color.rgb = mix(DefaultFX(color.rgb, uv), DeathFX(color.rgb, uv), deathWeigth);
+    color.rgb = mix(DefaultFX(color.rgb, uv), ActionFX(color.rgb, uv), actionWeigth);
+    color.rgb = mix(color.rgb, DeathFX(color.rgb, uv), deathWeigth);
     
     // color.rgb *= shake;
 	// gamma 

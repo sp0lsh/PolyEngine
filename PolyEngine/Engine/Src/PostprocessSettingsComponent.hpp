@@ -31,6 +31,7 @@ namespace Poly {
 		float TimeOfDeath = -1.0f;
 		float TimeOfAction = -1.0f;
 
+		float EnableBoss = 0.0f;
 	};
 
 	REGISTER_COMPONENT(ComponentsIDGroup, PostprocessSettingsComponent)

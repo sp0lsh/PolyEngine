@@ -24,8 +24,9 @@ uniform float uEnemyShipAngleY0;
 uniform vec4 uEnemyShipPos1;
 uniform float uEnemyShipAngleY1;
 
-
 uniform float uTimeOfDeath;
+
+uniform float uEnableBoss;
 
 in vec2 vTexCoord;
 out vec4 o_color;
@@ -267,6 +268,20 @@ float sdShip(vec3 p)
     return s;
 }
 
+float sdSubmarine(vec3 p)
+{
+    p *= vec3(0.2, 0.5, 0.5);
+    p.y += 3.0f * smoothstep(-0.8, 0.8, sin(0.3*uTime));
+    float s0 = sdCapsule(p, vec3(-3.0, 0.0, 0.0), vec3(3.0, 0.0, 0.0), 2.0);
+    float s1 = sdBox(p - vec3(2.0, 2.5, 0.0), vec3(0.2, 0.2, 0.1)) - 0.5;
+    float s2 = sdBox(p - vec3(2.5, 2.7, 0.0), vec3(0.4, 0.02, 1.5)) - 0.2;
+    float s3 = sdBox(p - vec3(1.0, 0.7, 0.0), vec3(4.0, 1.0, 0.3)) - 0.2;
+    float s = smin(s0, s1, 0.5);
+    s = smin(s, s2, 0.4);
+    s = smin(s, s3, 0.4);
+    return s;
+}
+
 mat2 rot2D(float a)
 {
     float s = sin(a);
@@ -279,6 +294,7 @@ float mapShips(vec3 p)
     vec3 ps = p - uShipPos.xyz;
     ps.xz *= rot2D(uShipAngleY);
     float s = sdShip(ps);
+
     // vec3 tpos0 = mix(vec3(0.0, 0.0, 0.0), vec3(5.0, 0.0, 0.0), fract(uTime));
     // vec3 tpos1 = tpos0 + vec3(1.0, 0.0, 0.0);
     // float torpede = sdCapsule(ps, tpos0, tpos1, 0.5);
@@ -292,15 +308,22 @@ float mapShips(vec3 p)
     //     s = min(s, enemyS);
     // }
 
-	vec3 pEnemy0 = p - uEnemyShipPos0.xyz;
-    pEnemy0.xz *= rot2D(uEnemyShipAngleY0);
-    float enemyS0 = sdShip(pEnemy0);
-    s = min(s, enemyS0);
+    if (uEnableBoss > 0.0)
+    {
+        s = min(s, sdSubmarine(p));
+    }
+    else
+    {
+        vec3 pEnemy0 = p - uEnemyShipPos0.xyz;
+        pEnemy0.xz *= rot2D(uEnemyShipAngleY0);
+        float enemyS0 = sdShip(pEnemy0);
+        s = min(s, enemyS0);
 
-    vec3 pEnemy1 = p - uEnemyShipPos1.xyz;
-    pEnemy1.xz *= rot2D(uEnemyShipAngleY1);
-    float enemyS1 = sdShip(pEnemy1);
-    s = min(s, enemyS1);
+        vec3 pEnemy1 = p - uEnemyShipPos1.xyz;
+        pEnemy1.xz *= rot2D(uEnemyShipAngleY1);
+        float enemyS1 = sdShip(pEnemy1);
+        s = min(s, enemyS1);
+    }
 
     return s;
 }

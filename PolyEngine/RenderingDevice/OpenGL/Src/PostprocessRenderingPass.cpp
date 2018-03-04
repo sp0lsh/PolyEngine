@@ -63,6 +63,8 @@ void PostprocessRenderingPass::OnRun(World* world, const CameraComponent* camera
 
 		GetProgram().SetUniform("uTimeOfDeath", PostprocessSettings->TimeOfDeath);
 		GetProgram().SetUniform("uTimeOfAction", PostprocessSettings->TimeOfAction);
+
+		GetProgram().SetUniform("uEnableBoss", PostprocessSettings->EnableBoss);
 		
 		const int MaxEnemies = 5;
 		int EnemyCount = PostprocessSettings->EnemyShipPos.GetSize();
