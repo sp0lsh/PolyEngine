@@ -1,5 +1,9 @@
 #version 330 core
 
+#ifndef MAX_ENEMY_COUNT
+#define MAX_ENEMY_COUNT 5
+#endif
+
 uniform sampler2D i_color;
 uniform sampler2D i_noise;
 uniform float uTime;
@@ -9,6 +13,17 @@ uniform mat4 uCameraRotation;
 
 uniform vec4 uShipPos;
 uniform float uShipAngleY;
+
+// uniform int uEnemyCount;
+// uniform vec4 uEnemyShipPos[MAX_ENEMY_COUNT];
+// uniform float uEnemyShipAngleY[MAX_ENEMY_COUNT];
+
+uniform vec4 uEnemyShipPos0;
+uniform float uEnemyShipAngleY0;
+
+uniform vec4 uEnemyShipPos1;
+uniform float uEnemyShipAngleY1;
+
 
 uniform float uTimeOfDeath;
 
@@ -196,6 +211,13 @@ vec4 renderWater(vec3 ro, vec3 rd)
     return vec4(color, depth);
 }
 
+float sdCapsule(vec3 p, vec3 a, vec3 b, float r)
+{
+    vec3 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h) - r;
+}
+
 float sdCylinder(vec3 p, vec2 h)
 {
     vec2 d = abs(vec2(length(p.xz), p.y)) - h;
@@ -256,7 +278,31 @@ float mapShips(vec3 p)
 {
     vec3 ps = p - uShipPos.xyz;
     ps.xz *= rot2D(uShipAngleY);
-    return sdShip(ps);
+    float s = sdShip(ps);
+    // vec3 tpos0 = mix(vec3(0.0, 0.0, 0.0), vec3(5.0, 0.0, 0.0), fract(uTime));
+    // vec3 tpos1 = tpos0 + vec3(1.0, 0.0, 0.0);
+    // float torpede = sdCapsule(ps, tpos0, tpos1, 0.5);
+    // s = min(s, torpede);
+
+    // for (int i = 0; i < uEnemyCount; ++i)
+    // {
+    //     vec3 pEnemy = p - uEnemyShipPos[i].xyz;
+    //     pEnemy.xz *= rot2D(uEnemyShipAngleY[i]);
+    //     float enemyS = sdShip(pEnemy);
+    //     s = min(s, enemyS);
+    // }
+
+	vec3 pEnemy0 = p - uEnemyShipPos0.xyz;
+    pEnemy0.xz *= rot2D(uEnemyShipAngleY0);
+    float enemyS0 = sdShip(pEnemy0);
+    s = min(s, enemyS0);
+
+    vec3 pEnemy1 = p - uEnemyShipPos1.xyz;
+    pEnemy1.xz *= rot2D(uEnemyShipAngleY1);
+    float enemyS1 = sdShip(pEnemy1);
+    s = min(s, enemyS1);
+
+    return s;
 }
 
 vec3 getNormalShips(vec3 p)
@@ -314,7 +360,7 @@ vec4 renderShips(vec3 ro, vec3 rd)
     vec3 p = vec3(0.0);
     float t = 0.0;
     float d = 0.0;
-    for (int i = 0; i < 200; ++i)
+    for (int i = 0; i < 100; ++i)
     {
         t += (d = mapShips(p = ro + rd * t));
         if (t < 0.01)

@@ -63,6 +63,39 @@ void PostprocessRenderingPass::OnRun(World* world, const CameraComponent* camera
 
 		GetProgram().SetUniform("uTimeOfDeath", PostprocessSettings->TimeOfDeath);
 		
+		const int MaxEnemies = 5;
+		int EnemyCount = PostprocessSettings->EnemyShipPos.GetSize();
+		EnemyCount = Clamp(EnemyCount, 0, MaxEnemies);
+		GetProgram().SetUniform("uEnemyCount", EnemyCount);
+		gConsole.LogInfo("void PostprocessRenderingPass::OnRun: EnemyCount: {}", EnemyCount);
+
+		if (EnemyCount > 0) {
+			GetProgram().SetUniform("uEnemyShipPos0", PostprocessSettings->EnemyShipPos[0]);
+			GetProgram().SetUniform("uEnemyShipAngleY0", PostprocessSettings->EnemyShipAngleY[0]);
+			// gConsole.LogInfo("void PostprocessRenderingPass::OnRun: EnemyID: {}, NamePos: {}, Pos: {}, NameAngle: {}, Angle: {}",
+			// 	0, PostprocessSettings->EnemyShipPos[0], PostprocessSettings->EnemyShipAngleY[0]);
+		}
+
+		if (EnemyCount > 1) {
+			GetProgram().SetUniform("uEnemyShipPos1", PostprocessSettings->EnemyShipPos[1]);
+			GetProgram().SetUniform("uEnemyShipAngleY1", PostprocessSettings->EnemyShipAngleY[1]);
+			// gConsole.LogInfo("void PostprocessRenderingPass::OnRun: EnemyID: {}, NamePos: {}, Pos: {}, NameAngle: {}, Angle: {}",
+			// 	0, PostprocessSettings->EnemyShipPos[0], PostprocessSettings->EnemyShipAngleY[0]);
+		}
+		/*
+		for (int i = 1; i < EnemyCount; ++i)
+		{
+			String namePos = String("uEnemyShipPos[") + String::From(i) + String("]");
+			String nameAngle = String("uEnemyShipAngleY[") + String::From(i) + String("]");
+			// String namePos = String("uEnemyShipPos");
+			// String nameAngle = String("uEnemyShipAngleY");
+			GetProgram().SetUniform(namePos, PostprocessSettings->EnemyShipPos[i]);
+			GetProgram().SetUniform(nameAngle, PostprocessSettings->EnemyShipAngleY[i]);
+			gConsole.LogInfo("void PostprocessRenderingPass::OnRun: EnemyID: {}, NamePos: {}, Pos: {}, NameAngle: {}, Angle: {}",
+				i, namePos, PostprocessSettings->EnemyShipPos[i], nameAngle, PostprocessSettings->EnemyShipAngleY[i]);
+		}
+		*/
+		
 		//gConsole.LogInfo("void PostprocessRenderingPass::OnRun: UseCashetes: {}", PostprocessSettings->UseCashetes);
 	}
 

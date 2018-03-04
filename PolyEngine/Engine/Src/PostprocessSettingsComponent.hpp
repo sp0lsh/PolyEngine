@@ -25,6 +25,9 @@ namespace Poly {
 		Vector	ShipPos = Vector(0.0f, 0.0f, 0.0f);
 		float	ShipAngleY = 0.0f;
 
+		Dynarray<Vector> EnemyShipPos;
+		Dynarray<float>	EnemyShipAngleY;
+
 		float TimeOfDeath = -1.0f;
 
 	};

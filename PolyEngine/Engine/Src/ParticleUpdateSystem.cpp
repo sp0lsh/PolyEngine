@@ -59,7 +59,7 @@ void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, P
 
 void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 {
-	gConsole.LogInfo("ParticleEmitter::Update {}/{}", emitter->ParticlesPool.GetSize(), emitter->settings.MaxSize);
+	// gConsole.LogInfo("ParticleEmitter::Update {}/{}", emitter->ParticlesPool.GetSize(), emitter->settings.MaxSize);
 
 	float deltaTime = (float)(TimeSystem::GetTimerDeltaTime(world, Poly::eEngineTimer::GAMEPLAY));
 
@@ -130,6 +130,6 @@ void ParticleUpdateSystem::EmitterRecreateBuffer(World* world, ParticleEmitter* 
 		emitter->InstancesTransform[transIndx + 14] = p.Position.Z;
 		transIndx += 16;
 	}
-
+	
 	emitter->ParticleProxy->SetContent(*emitter);
 }
