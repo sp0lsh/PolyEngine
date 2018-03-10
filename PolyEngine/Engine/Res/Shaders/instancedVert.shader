@@ -12,25 +12,20 @@ uniform mat4 uViewFromWorld;
 uniform mat4 uWorldFromModel;
 uniform float uTime;
 
-// float nrand(float n)
-// {
-//     return fract(sin(dot(n, 12.9898)) * 43758.5453);
-// }
-
 void main()
 {
-	// float rnd = nrand(float(gl_InstanceID));
-    
 	vec4 VertexInInstance = vec4(aVertexInInstance, 1.0);
+    vec4 ParticleCenterInWorld = uWorldFromModel * aModelFromInstance * vec4(0.0, 0.0, 0.0, 1.0);
 
-	// float _ScaleY = aModelFromInstance[0][0];
-    // float _ScaleX = aModelFromInstance[1][1];
-    // vec4 VertexInScreen = uScreenFromView * (uViewFromWorld * uWorldFromModel * aModelFromInstance * vec4(0.0, 0.0, 0.0, 1.0)
- 	// 	+ vec4(VertexInInstance.x, VertexInInstance.y, 0.0, 0.0)
-    //     * vec4(_ScaleX, _ScaleY, 1.0, 1.0));
+    vec3 CameraRightInWorld = vec3(uViewFromWorld[0][0], uViewFromWorld[1][0], uViewFromWorld[2][0]);
+	vec3 CameraUpInWorld = vec3(uViewFromWorld[0][1], uViewFromWorld[1][1], uViewFromWorld[2][1]);
+    vec2 BillboardSize = vec2(aModelFromInstance[0][0], aModelFromInstance[1][1]);
+    vec4 VertexInWorld = ParticleCenterInWorld
+		+ vec4(CameraRightInWorld, 0.0) * aVertexInInstance.x * BillboardSize.x
+		+ vec4(CameraUpInWorld, 0.0)	* aVertexInInstance.y * BillboardSize.y;
 
-    vec4 VertexInScreen = uScreenFromView * uViewFromWorld * uWorldFromModel * aModelFromInstance * VertexInInstance;
-	
+    vec4 VertexInScreen = uScreenFromView * uViewFromWorld * VertexInWorld;
+
     gl_Position = VertexInScreen;
     vTexCoord = aTexCoord;
     vInstanceID = gl_InstanceID;
