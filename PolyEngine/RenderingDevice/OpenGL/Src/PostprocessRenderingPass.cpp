@@ -63,6 +63,7 @@ void PostprocessRenderingPass::OnRun(World* world, const CameraComponent* camera
 
 		GetProgram().SetUniform("uTimeOfDeath", PostprocessSettings->TimeOfDeath);
 		GetProgram().SetUniform("uTimeOfAction", PostprocessSettings->TimeOfAction);
+		GetProgram().SetUniform("uTimeOfWin", PostprocessSettings->TimeOfWin);
 
 		GetProgram().SetUniform("uEnableBoss", PostprocessSettings->EnableBoss);
 		

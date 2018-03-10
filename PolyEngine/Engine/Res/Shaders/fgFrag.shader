@@ -19,6 +19,7 @@ uniform float uGrainPower;
 
 uniform float uTimeOfDeath;
 uniform float uTimeOfAction;
+uniform float uTimeOfWin;
 
 // based on aberation by hornet
 // https://www.shadertoy.com/view/XssGz8
@@ -439,6 +440,7 @@ void main()
     // float deathWeigth = smoothstep(-0.5, 0.5, sin(2.0 * uTime));
     color.rgb = mix(DefaultFX(color.rgb, uv), ActionFX(color.rgb, uv), actionWeigth);
     color.rgb = mix(color.rgb, DeathFX(color.rgb, uv), deathWeigth);
+    color.rgb = mix(color.rgb, vec3(0.5, 1.0, 0.5), 0.5*step(0.0, uTimeOfWin));
     
     // color.rgb *= shake;
 	// gamma 
