@@ -47,14 +47,14 @@ void SpritesheetRenderingPass::OnRun(World* world, const CameraComponent* camera
 		Matrix screenTransform = mv * objTransform;
 
 		const SpritesheetSettings settings = spritesheetCmp->GetSettings();
-		float startFrame = settings.IsRandom ? RandomRange(0.0f, settings.SubImages.X * settings.SubImages.Y) : settings.StartFrame;
+		float startFrame = settings.IsRandomStartFrame ? RandomRange(0.0f, settings.SubImages.X * settings.SubImages.Y) : settings.StartFrame;
 
 		GetProgram().SetUniform("uMV", screenTransform);
 		GetProgram().SetUniform("uScale", objTransform.m00, objTransform.m11);
 		GetProgram().SetUniform("uSubImages", settings.SubImages.X, settings.SubImages.Y);
 		GetProgram().SetUniform("uColor", settings.Color);
- 		GetProgram().SetUniform("uStartFrame", startFrame);
- 		GetProgram().SetUniform("uSpeed", (float)(settings.Speed));
+		GetProgram().SetUniform("uStartFrame", startFrame);
+		GetProgram().SetUniform("uSpeed", (float)(settings.Speed));
 
 		const TextureResource* Spritesheet = spritesheetCmp->GetSpritesheet();
 		GLuint TextureID = Spritesheet == nullptr

@@ -36,23 +36,6 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 
 	for (auto componentsTuple : world->IterateComponents<ParticleComponent>())
 	{
-		/*
-		struct ENGINE_DLLEXPORT Settings
-		{
-			eSimulationSpace SimulationSpace = eSimulationSpace::WORLD_SPACE;
-			struct ENGINE_DLLEXPORT SpritesheetSettings
-			{
-				# Vector2f SubImages = Vector2f(4.0, 4.0);
-				# Color Color = Color::WHITE;
-				# float StartFrame = 0.0f;
-				# float Speed = 1.0f;
-				float IsRandom = 0.0f;
-			};
-			# float Speed = 1.0f;
-			# Color Color = Color::WHITE;
-		};
-		*/
-
 		const ParticleComponent* particleCmp = std::get<ParticleComponent*>(componentsTuple);
 		const EntityTransform& transform = particleCmp->GetTransform();
 		const Matrix& WorldFromModel = particleCmp->GetEmitter()->GetSettings().SimulationSpace == ParticleEmitter::eSimulationSpace::LOCAL_SPACE
@@ -61,12 +44,16 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 		
 		GetProgram().SetUniform("uViewFromWorld", ViewFromWorld);
 		GetProgram().SetUniform("uWorldFromModel", WorldFromModel);
-		GetProgram().SetUniform("uEmitterColor", particleCmp->GetEmitter()->GetSettings().Color);
-		GetProgram().SetUniform("uSpriteColor", particleCmp->GetEmitter()->GetSettings().SpritesheetSettings.Color);
-		GetProgram().SetUniform("uSpriteStartFramed", particleCmp->GetEmitter()->GetSettings().SpritesheetSettings.StartFrame);
-		GetProgram().SetUniform("uSpriteSpeed", particleCmp->GetEmitter()->GetSettings().Speed);
-		Vector2f SpriteSubImages = particleCmp->GetEmitter()->GetSettings().SpritesheetSettings.SubImages;
-		GetProgram().SetUniform("uSpriteSubImages", SpriteSubImages.X, SpriteSubImages.Y);
+		
+		ParticleEmitter::Settings emitterSettings = particleCmp->GetEmitter()->GetSettings();
+		GetProgram().SetUniform("uEmitterColor", emitterSettings.Color);
+		
+		SpritesheetSettings spriteSettings = emitterSettings.SpritesheetSettings;
+		GetProgram().SetUniform("uSpriteColor", spriteSettings.Color);
+		float startFrame = spriteSettings.IsRandomStartFrame ? RandomRange(0.0f, spriteSettings.SubImages.X * spriteSettings.SubImages.Y) : spriteSettings.StartFrame;
+		GetProgram().SetUniform("uSpriteStartFrame", startFrame);
+		GetProgram().SetUniform("uSpriteSpeed", spriteSettings.Speed);
+		GetProgram().SetUniform("uSpriteSubImages", spriteSettings.SubImages.X, spriteSettings.SubImages.Y);
 
 		int partileLen = particleCmp->GetEmitter()->GetInstancesCount();
 		const TextureResource* Texture = particleCmp->GetEmitter()->GetSpritesheet();

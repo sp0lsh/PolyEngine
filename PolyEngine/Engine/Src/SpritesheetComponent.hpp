@@ -16,7 +16,7 @@ namespace Poly {
 		Color Color = Color::WHITE;
 		float StartFrame = 0.0f;
 		float Speed = 1.0f;
-		float IsRandom = 0.0f;
+		bool IsRandomStartFrame = false;
 	};
 
 	class ENGINE_DLLEXPORT SpritesheetComponent : public ComponentBase
