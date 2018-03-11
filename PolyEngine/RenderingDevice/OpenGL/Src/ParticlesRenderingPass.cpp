@@ -44,8 +44,8 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 			{
 				# Vector2f SubImages = Vector2f(4.0, 4.0);
 				# Color Color = Color::WHITE;
-				float StartFrame = 0.0f;
-				float Speed = 1.0f;
+				# float StartFrame = 0.0f;
+				# float Speed = 1.0f;
 				float IsRandom = 0.0f;
 			};
 			# float Speed = 1.0f;
@@ -58,12 +58,15 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 		const Matrix& WorldFromModel = particleCmp->GetEmitter()->GetSettings().SimulationSpace == ParticleEmitter::eSimulationSpace::LOCAL_SPACE
 			? transform.GetWorldFromModel()
 			: Matrix();
-		// Matrix ViewFromModel = ViewFromWorld * WorldFromModel;
 		
 		GetProgram().SetUniform("uViewFromWorld", ViewFromWorld);
 		GetProgram().SetUniform("uWorldFromModel", WorldFromModel);
-		GetProgram().SetUniform("uColor", particleCmp->GetEmitter()->GetSettings().Color);
-		GetProgram().SetUniform("uSpeed", particleCmp->GetEmitter()->GetSettings().Speed);
+		GetProgram().SetUniform("uEmitterColor", particleCmp->GetEmitter()->GetSettings().Color);
+		GetProgram().SetUniform("uSpriteColor", particleCmp->GetEmitter()->GetSettings().SpritesheetSettings.Color);
+		GetProgram().SetUniform("uSpriteStartFramed", particleCmp->GetEmitter()->GetSettings().SpritesheetSettings.StartFrame);
+		GetProgram().SetUniform("uSpriteSpeed", particleCmp->GetEmitter()->GetSettings().Speed);
+		Vector2f SpriteSubImages = particleCmp->GetEmitter()->GetSettings().SpritesheetSettings.SubImages;
+		GetProgram().SetUniform("uSpriteSubImages", SpriteSubImages.X, SpriteSubImages.Y);
 
 		int partileLen = particleCmp->GetEmitter()->GetInstancesCount();
 		const TextureResource* Texture = particleCmp->GetEmitter()->GetSpritesheet();
