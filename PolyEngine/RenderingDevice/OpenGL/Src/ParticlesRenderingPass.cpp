@@ -36,6 +36,23 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 
 	for (auto componentsTuple : world->IterateComponents<ParticleComponent>())
 	{
+		/*
+		struct ENGINE_DLLEXPORT Settings
+		{
+			eSimulationSpace SimulationSpace = eSimulationSpace::WORLD_SPACE;
+			struct ENGINE_DLLEXPORT SpritesheetSettings
+			{
+				# Vector2f SubImages = Vector2f(4.0, 4.0);
+				# Color Color = Color::WHITE;
+				float StartFrame = 0.0f;
+				float Speed = 1.0f;
+				float IsRandom = 0.0f;
+			};
+			# float Speed = 1.0f;
+			# Color Color = Color::WHITE;
+		};
+		*/
+
 		const ParticleComponent* particleCmp = std::get<ParticleComponent*>(componentsTuple);
 		const EntityTransform& transform = particleCmp->GetTransform();
 		const Matrix& WorldFromModel = particleCmp->GetEmitter()->GetSettings().SimulationSpace == ParticleEmitter::eSimulationSpace::LOCAL_SPACE
