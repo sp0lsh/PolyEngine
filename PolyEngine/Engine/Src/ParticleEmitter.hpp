@@ -51,8 +51,8 @@ namespace Poly
 			float Speed = 1.0f;
 			Color Color = Color::WHITE;
 			// TODO end
-			std::function<void(Particle*)> ParticleInitFunc;
-			std::function<void(Particle*)> ParticleUpdateFunc;
+			std::function<void(Particle*)> ParticleInitFunc		= [](ParticleEmitter::Particle* p) {};
+			std::function<void(Particle*)> ParticleUpdateFunc	= [](ParticleEmitter::Particle* p) {};
 		};
 
 		ParticleEmitter(const Settings& settings);
