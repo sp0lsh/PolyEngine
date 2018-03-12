@@ -30,9 +30,12 @@ namespace Poly
 		struct ENGINE_DLLEXPORT Particle
 		{
 			Vector Position;
+			Quaternion Rotation;
 			Vector Scale;
 			Vector Velocity;
+			Quaternion AngularVelocity;
 			Vector Acceleration;
+			Quaternion AngularAcceleration;
 			float Age;
 			float LifeTime;
 		};

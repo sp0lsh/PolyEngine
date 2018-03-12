@@ -45,9 +45,12 @@ void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, P
 		::new(p) ParticleEmitter::Particle();
 		
 		p->Position = PositionInModel;
+		p->Rotation = Quaternion::IDENTITY;
 		p->Scale = Vector::ONE;
 		p->Velocity = Vector::ZERO;
+		p->AngularVelocity = Quaternion::IDENTITY;
 		p->Acceleration = Vector::ZERO;
+		p->AngularAcceleration = Quaternion::IDENTITY;
 		p->Age = 0.0f;
 		p->LifeTime = 1.0f;
 
@@ -59,7 +62,7 @@ void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, P
 
 void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 {
-	gConsole.LogInfo("ParticleEmitter::Update {}/{}", emitter->ParticlesPool.GetSize(), emitter->settings.MaxSize);
+	// gConsole.LogInfo("ParticleEmitter::Update {}/{}", emitter->ParticlesPool.GetSize(), emitter->settings.MaxSize);
 
 	float deltaTime = (float)(TimeSystem::GetTimerDeltaTime(world, Poly::eEngineTimer::GAMEPLAY));
 
@@ -100,8 +103,12 @@ void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 
 	for (ParticleEmitter::Particle& p : emitter->ParticlesPool)
 	{
-		p.Position += p.Velocity;
 		p.Velocity += p.Acceleration;
+		p.Position += p.Velocity;
+
+		p.AngularVelocity *= p.AngularAcceleration;
+		p.Rotation *= p.AngularVelocity;
+
 		emitter->settings.ParticleUpdateFunc(&p);
 	}
 }
