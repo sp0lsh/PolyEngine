@@ -68,7 +68,7 @@ void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 		if (emitter->NextBurstTime < 0.0f)
 		{
 			emitter->NextBurstTime = RandomRange(emitter->settings.BurstTimeMin, emitter->settings.BurstTimeMax);
-			emitter->Emit((int)RandomRange(emitter->settings.BurstSizeMin, emitter->settings.BurstSizeMax));
+			emitter->Emit((size_t)RandomRange(emitter->settings.BurstSizeMin, emitter->settings.BurstSizeMax));
 		}
 		else
 		{

@@ -65,7 +65,7 @@ namespace Poly
 		void SetBurstEnabled(bool value) { IsBurstEnabled = value; }
 		const IterablePoolAllocator<Particle>& GetParticlesPool() const { return ParticlesPool; }
 		bool HasInstances() const { return ParticlesPool.GetSize() != 0; }
-		int GetInstancesCount() const { return ParticlesPool.GetSize(); }
+		size_t GetInstancesCount() const { return ParticlesPool.GetSize(); }
 		
 		void Emit(size_t quota);
 
@@ -75,7 +75,7 @@ namespace Poly
 		std::unique_ptr<IParticleDeviceProxy> ParticleProxy;
 		bool IsBurstEnabled = true;
 		float NextBurstTime = -1.0;
-		int ToEmit = 0;
+		size_t ToEmit = 0;
 		IterablePoolAllocator<Particle> ParticlesPool;
 	};
 }
