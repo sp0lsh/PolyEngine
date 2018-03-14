@@ -30,12 +30,9 @@ namespace Poly
 		struct ENGINE_DLLEXPORT Particle
 		{
 			Vector Position;
-			Quaternion Rotation;
 			Vector Scale;
 			Vector Velocity;
-			Quaternion AngularVelocity;
 			Vector Acceleration;
-			Quaternion AngularAcceleration;
 			float Age;
 			float LifeTime;
 		};
@@ -66,9 +63,9 @@ namespace Poly
 		const IParticleDeviceProxy* GetParticleProxy() const { return ParticleProxy.get(); }
 		bool GetIsBurstEnabled() { return IsBurstEnabled; }
 		void SetBurstEnabled(bool value) { IsBurstEnabled = value; }
-		const Dynarray<float>& GetInstances() const { return InstancesTransform; }
-		bool HasInstances() const { return InstancesTransform.GetSize() != 0; }
-		int GetInstancesCount() const { return InstancesTransform.GetSize() / 16; }
+		const IterablePoolAllocator<Particle>& GetParticlesPool() const { return ParticlesPool; }
+		bool HasInstances() const { return ParticlesPool.GetSize() != 0; }
+		int GetInstancesCount() const { return ParticlesPool.GetSize(); }
 		
 		void Emit(size_t quota);
 
@@ -78,8 +75,7 @@ namespace Poly
 		std::unique_ptr<IParticleDeviceProxy> ParticleProxy;
 		bool IsBurstEnabled = true;
 		float NextBurstTime = -1.0;
-		int toEmit = 0;
+		int ToEmit = 0;
 		IterablePoolAllocator<Particle> ParticlesPool;
-		Dynarray<float> InstancesTransform;
 	};
 }

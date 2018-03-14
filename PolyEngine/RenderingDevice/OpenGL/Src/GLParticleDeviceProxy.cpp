@@ -80,14 +80,32 @@ GLParticleDeviceProxy::~GLParticleDeviceProxy()
 		glDeleteVertexArrays(1, &VAO);
 }
 
-void GLParticleDeviceProxy::SetContent(const ParticleEmitter& particles)
+void GLParticleDeviceProxy::SetContent(const ParticleEmitter& emitter)
 {
-	// gConsole.LogInfo("GLParticleDeviceProxy::SetContent new: {}",
-	// 	// instancesTransformBuffer.GetSize() / 16,
-	// 	particles.GetInstances().GetSize() / 16
-	// );
+	InstancesTransform.Clear();
+	InstancesTransform.Resize(16 * emitter.GetInstancesCount());
 	
+	for (int i = 0; i < InstancesTransform.GetSize(); ++i)
+	{
+		InstancesTransform[i] = 0.0f;
+	}
+
+	int transIndx = 0;
+	for (const ParticleEmitter::Particle& p : emitter.GetParticlesPool())
+	{
+		// Scale
+		InstancesTransform[transIndx + 0] = p.Scale.X;
+		InstancesTransform[transIndx + 5] = p.Scale.Y;
+		InstancesTransform[transIndx + 10] = p.Scale.Z;
+		InstancesTransform[transIndx + 15] = 1.0f;
+		// translation
+		InstancesTransform[transIndx + 12] = p.Position.X;
+		InstancesTransform[transIndx + 13] = p.Position.Y;
+		InstancesTransform[transIndx + 14] = p.Position.Z;
+		transIndx += 16;
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * particles.GetInstances().GetSize(), particles.GetInstances().GetData(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * InstancesTransform.GetSize(), InstancesTransform.GetData(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

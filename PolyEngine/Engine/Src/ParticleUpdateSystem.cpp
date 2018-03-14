@@ -18,14 +18,14 @@ void ParticleUpdateSystem::ParticleUpdatePhase(World* world)
 		ParticleEmitter* emitter = particle->Emitter;
 		EmitterEmit(world, emitter, particle);
 		EmitterUpdate(world, emitter);
-		EmitterRecreateBuffer(world, particle->Emitter);
+		EmitterRecreateBuffer(world, emitter);
 	}
 }
 
 void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, ParticleComponent* particleCmp)
 {
-	size_t size = emitter->toEmit;
-	emitter->toEmit = 0;
+	size_t size = emitter->ToEmit;
+	emitter->ToEmit = 0;
 	size_t sizeLeft = emitter->ParticlesPool.GetFreeBlockCount();
 	if (size > sizeLeft)
 	{
@@ -45,12 +45,9 @@ void ParticleUpdateSystem::EmitterEmit(World* world, ParticleEmitter* emitter, P
 		::new(p) ParticleEmitter::Particle();
 		
 		p->Position = PositionInModel;
-		p->Rotation = Quaternion::IDENTITY;
 		p->Scale = Vector::ONE;
 		p->Velocity = Vector::ZERO;
-		p->AngularVelocity = Quaternion::IDENTITY;
 		p->Acceleration = Vector::ZERO;
-		p->AngularAcceleration = Quaternion::IDENTITY;
 		p->Age = 0.0f;
 		p->LifeTime = 1.0f;
 
@@ -106,37 +103,11 @@ void ParticleUpdateSystem::EmitterUpdate(World* world, ParticleEmitter* emitter)
 		p.Velocity += p.Acceleration;
 		p.Position += p.Velocity;
 
-		p.AngularVelocity *= p.AngularAcceleration;
-		p.Rotation *= p.AngularVelocity;
-
 		emitter->settings.ParticleUpdateFunc(&p);
 	}
 }
 
 void ParticleUpdateSystem::EmitterRecreateBuffer(World* world, ParticleEmitter* emitter)
 {
-	emitter->InstancesTransform.Clear();
-	emitter->InstancesTransform.Resize(16 * emitter->ParticlesPool.GetSize());
-
-	for (int i = 0; i < emitter->InstancesTransform.GetSize(); ++i)
-	{
-		emitter->InstancesTransform[i] = 0.0f;
-	}
-
-	int transIndx = 0;
-	for (ParticleEmitter::Particle& p : emitter->ParticlesPool)
-	{
-		// Scale
-		emitter->InstancesTransform[transIndx + 0] = p.Scale.X;
-		emitter->InstancesTransform[transIndx + 5] = p.Scale.Y;
-		emitter->InstancesTransform[transIndx + 10] = p.Scale.Z;
-		emitter->InstancesTransform[transIndx + 15] = 1.0f;
-		// translation
-		emitter->InstancesTransform[transIndx + 12] = p.Position.X;
-		emitter->InstancesTransform[transIndx + 13] = p.Position.Y;
-		emitter->InstancesTransform[transIndx + 14] = p.Position.Z;
-		transIndx += 16;
-	}
-
 	emitter->ParticleProxy->SetContent(*emitter);
 }

@@ -6,7 +6,7 @@
 using namespace Poly;
 
 ParticleEmitter::ParticleEmitter(const Settings& settings)
-	: settings(settings), ParticlesPool(settings.MaxSize), toEmit(settings.InitialSize)
+	: settings(settings), ParticlesPool(settings.MaxSize), ToEmit(settings.InitialSize)
 {
 	Spritesheet = ResourceManager<TextureResource>::Load(
 		settings.SpritesheetSettings.SpritePath,
@@ -26,5 +26,5 @@ ParticleEmitter::~ParticleEmitter()
 
 void ParticleEmitter::Emit(size_t size)
 {
-	toEmit += size;
+	ToEmit += size;
 }
