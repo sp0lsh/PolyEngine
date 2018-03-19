@@ -2,6 +2,7 @@
 
 #include "GLMeshDeviceProxy.hpp"
 #include "GLTextureDeviceProxy.hpp"
+#include "GLParticleDeviceProxy.hpp"
 
 #include <World.hpp>
 #include <TimeSystem.hpp>
@@ -55,7 +56,7 @@ void ParticlesRenderingPass::OnRun(World* world, const CameraComponent* camera, 
 		GetProgram().SetUniform("uSpriteSpeed", spriteSettings.Speed);
 		GetProgram().SetUniform("uSpriteSubImages", spriteSettings.SubImages.X, spriteSettings.SubImages.Y);
 
-		int partileLen = (int)(particleCmp->GetEmitter()->GetInstancesCount());
+		GLsizei partileLen = (GLsizei)(particleCmp->GetEmitter()->GetInstancesCount());
 		const TextureResource* Texture = particleCmp->GetEmitter()->GetSpritesheet();
 		const GLParticleDeviceProxy* particleProxy = static_cast<const GLParticleDeviceProxy*>(particleCmp->GetEmitter()->GetParticleProxy());
 		GLuint particleVAO = particleProxy->GetVAO();

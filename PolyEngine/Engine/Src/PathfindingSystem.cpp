@@ -2,102 +2,96 @@
 
 #include "PathfindingSystem.hpp"
 #include "PathfindingComponent.hpp"
+#include <OrderedMap.hpp>
 
 using namespace Poly;
 
 struct PathNode
 {
-	PathNode(const Vector2i& cell, float cost, float heurCost, i64 prevNode = -1)
-		: Cell(cell), Cost(cost), HeuristicCost(heurCost), PrevNode(prevNode) {}
+	PathNode(const NavNode* node, float cost, float heurCost, i64 prevNode = -1)
+		: Node(node), Cost(cost), HeuristicCost(heurCost), PrevNode(prevNode) {}
 
-	Vector2i Cell;
+	const NavNode* Node;
 	float Cost;
 	float HeuristicCost;
 	i64 PrevNode = -1;
 	float TotalCost() const { return Cost + HeuristicCost; }
 };
 
-class Vector2iHash {
-public:
-	size_t operator()(const Vector2i& k) const {
-		return k.X * 100 + k.Y; //TODO make this better
-	}
+struct PathNodeCmp
+{
+	bool operator()(const std::pair<i64, float>& a, const std::pair<i64, float>& b) const { return a.second < b.second; }
 };
 
-Optional<Dynarray<Vector2f>> CalculateNewPath(const NavGrid* grid, const Vector2f& start, const Vector2f& dest, float agentRadius)
+Optional<Dynarray<Vector>> CalculateNewPath(const NavGraph* graph, const Vector& start, const Vector& dest, size_t depthLimit)
 {
 	// Swap start and dest to better handle path parsing later
-	Vector2f startInternal = dest;
-	Vector2f destInternal = start;
+	Vector startInternal = dest;
+	Vector destInternal = start;
 
-	if (!grid->IsPositionValid(startInternal, agentRadius) || !grid->IsPositionValid(destInternal, agentRadius))
-		return Optional<Dynarray<Vector2f>>();
-
-	Vector2i startInternalCell = grid->GetCellAtPosition(startInternal).Value();
-	Vector2i destInternalCell = grid->GetCellAtPosition(destInternal).Value();
+	const NavNode* startNode = graph->GetNodeFromWorldPosition(startInternal);
+	const NavNode* destNode = graph->GetNodeFromWorldPosition(destInternal);
+	if(!startNode || !destNode)
+		return Optional<Dynarray<Vector>>();
 
 	Dynarray<PathNode> AllNodes;
 
-	auto comparator = [&AllNodes](size_t a, size_t b) { return AllNodes[a].TotalCost() < AllNodes[b].TotalCost(); };
-	auto heuristic = [destInternalCell](const Vector2i& pos) { return (destInternalCell.ToVector2f() - pos.ToVector2f()).Length(); };
-	
-	PriorityQueue<i64> openList(comparator), closedList(comparator);
-	std::unordered_map<Vector2i, float, Vector2iHash> openListsMinCosts, closedListsMinCosts;
+	PriorityQueue<std::pair<i64, float>, PathNodeCmp> openList, closedList;
+	OrderedMap<const NavNode*, float> minCosts;
 
-	AllNodes.PushBack(PathNode( startInternalCell, 0, heuristic(startInternalCell) ));
-	openList.Push(AllNodes.GetSize() - 1);
-	openListsMinCosts[startInternalCell] = 0;
+	AllNodes.PushBack(PathNode(startNode, 0, graph->GetHeuristicCost(startNode, destNode) ));
+	openList.Push(std::make_pair(AllNodes.GetSize() - 1, graph->GetHeuristicCost(startNode, destNode)));
+	minCosts.Insert(startNode, 0.f);
 
 	i64 bestNodeIdx = -1;
+	Dynarray<const NavNode*> connections(8);
 	while (openList.GetSize() > 0 && bestNodeIdx < 0)
 	{
-		i64 qIdx = openList.Pop();
-		const PathNode& q = AllNodes[qIdx];
-
-		Dynarray<Vector2i> neighbours = grid->GetNeighbours(q.Cell);
-		for (const Vector2i& neighbour : neighbours)
+		i64 qIdx = openList.Pop().first;
+		
+		connections.Clear();
+		graph->GetConnections(AllNodes[qIdx].Node, connections);
+		for (const NavNode* connection : connections)
 		{
-			// cannot walk here
-			if (!grid->IsPositionValid(grid->GetCellMiddlePos(neighbour), agentRadius))
-				continue;
-
 			// we reached destination
-			if (neighbour == destInternalCell)
+			if (connection == destNode)
 			{
 				bestNodeIdx = qIdx;
 				break;
 			}
-				
-			PathNode s{ neighbour, q.Cost + 1, heuristic(neighbour), qIdx };
+			
+			const PathNode& q = AllNodes[qIdx];
 
-			auto& it = openListsMinCosts.find(s.Cell);
-			if (it != openListsMinCosts.end() && it->second < s.Cost)
+			const float moveCost = graph->GetTravelCost(connection, q.Node);
+			PathNode s{ connection, q.Cost + moveCost, graph->GetHeuristicCost(connection, destNode), qIdx };
+
+			const auto& valOpt = minCosts.Get(s.Node);
+			if (valOpt.HasValue() && valOpt.Value() < s.Cost)
 				continue; // node has worse base cost than other (in the same pos) we visited before, skip it
-
-			auto& it2 = closedListsMinCosts.find(s.Cell);
-			if (it2 != closedListsMinCosts.end() && it2->second < s.Cost)
-				continue; // node has worse base cost than other (in the same pos) we visited before, skip it
-
 
 			AllNodes.PushBack(s);
-			openList.Push(AllNodes.GetSize() - 1);
-			openListsMinCosts[s.Cell] = s.Cost;
+			openList.Push(std::make_pair(AllNodes.GetSize() - 1, s.TotalCost()));
+			auto entry = minCosts.Entry(s.Node);
+			if (entry.IsVacant())
+				entry.VacantInsert(s.Cost);
+			else
+				entry.OccupiedReplace(s.Cost);
 		}
 
-		closedList.Push(qIdx);
-		closedListsMinCosts[q.Cell] = q.Cost;
+		closedList.Push(std::make_pair(qIdx, AllNodes[qIdx].TotalCost()));
+		minCosts[AllNodes[qIdx].Node] = AllNodes[qIdx].Cost;
 	}
 
 	if (bestNodeIdx < 0)
-		return Optional<Dynarray<Vector2f>>();
+		return Optional<Dynarray<Vector>>();
 
-	Dynarray<Vector2f> path;
+	Dynarray<Vector> path;
 	path.PushBack(start);
 	i64 currNodeIdx = bestNodeIdx;
 	do
 	{
 		const PathNode& q = AllNodes[currNodeIdx];
-		path.PushBack(grid->GetCellMiddlePos(q.Cell));
+		path.PushBack(graph->GetNodeWorldPosition(q.Node));
 		currNodeIdx = q.PrevNode;
 	} while (currNodeIdx >= 0);
 	
@@ -105,14 +99,32 @@ Optional<Dynarray<Vector2f>> CalculateNewPath(const NavGrid* grid, const Vector2
 	return path;
 }
 
-void SmoothPath(Dynarray<Vector2f>& path)
+void SmoothPath(const NavGraph* graph, Dynarray<Vector>& path)
 {
-	//TODO implement
+	size_t currIdx = 0;
+	while (currIdx < path.GetSize() - 1)
+	{
+
+		size_t stillVisibleIdx = currIdx;
+		for (size_t idx = path.GetSize() - 1; idx > currIdx; --idx)
+		{
+			if (graph->CanConnectDirectly(graph->GetNodeFromWorldPosition(path[currIdx]), graph->GetNodeFromWorldPosition(path[idx])))
+			{
+				stillVisibleIdx = idx;
+				break;
+			}
+		}
+
+		for (size_t idx = currIdx + 1; idx < stillVisibleIdx; ++idx)
+			path.RemoveByIdx(currIdx + 1);
+
+		++currIdx;
+	}
 }
 
 ENGINE_DLLEXPORT void Poly::PathfindingSystem::UpdatePhase(World* world)
 {
-	for (auto& tuple : world->IterateComponents<PathfindingComponent>())
+	for (auto tuple : world->IterateComponents<PathfindingComponent>())
 	{
 		PathfindingComponent* pathfindingCmp = std::get<PathfindingComponent*>(tuple);
 
@@ -120,8 +132,8 @@ ENGINE_DLLEXPORT void Poly::PathfindingSystem::UpdatePhase(World* world)
 		{
 			pathfindingCmp->RecalculateRequested = false;
 			Vector trans = pathfindingCmp->GetOwner()->GetTransform().GetGlobalTranslation();
-			Optional<Dynarray<Vector2f>> path = CalculateNewPath(pathfindingCmp->NavigationGrid,
-				Vector2f(trans.X, trans.Z), pathfindingCmp->CurentDestination.Value(), pathfindingCmp->AgentRadius);
+			Optional<Dynarray<Vector>> path = CalculateNewPath(pathfindingCmp->NavigationGraph,
+				trans, pathfindingCmp->CurentDestination.Value(), 16);
 
 			if (!path.HasValue())
 			{
@@ -129,7 +141,8 @@ ENGINE_DLLEXPORT void Poly::PathfindingSystem::UpdatePhase(World* world)
 				continue;
 			}
 
-			pathfindingCmp->CalculatedPath = std::move(path.TakeValue());
+			SmoothPath(pathfindingCmp->NavigationGraph, path.Value());
+			pathfindingCmp->CalculatedPath = path.TakeValue();
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Poly {
 		const ParticleEmitter* GetEmitter() const { return Emitter; }
 
 	private:
-		ParticleEmitter* Emitter;
+		ParticleEmitter* Emitter = nullptr;
 	};
 
 	REGISTER_COMPONENT(ComponentsIDGroup, ParticleComponent)
