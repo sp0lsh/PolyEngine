@@ -34,10 +34,8 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	DepthShader("Shaders/depth.vert.glsl", "Shaders/depth.frag.glsl"),
 	LightCullingShader("Shaders/lightCulling.comp.glsl"),
 	LightAccumulationShader("Shaders/lightAccumulation.vert.glsl", "Shaders/lightAccumulation.frag.glsl"),
-	// LightAccumulationShader("Shaders/lightAccumulation.vert.glsl", "Shaders/lightAccumulationTexDebug.frag.glsl"),
 	HDRShader("Shaders/hdr.vert.glsl", "Shaders/hdr.frag.glsl"),
 	SkyboxShader("Shaders/skybox.vert.glsl", "Shaders/skybox.frag.glsl"),
-	SSAOShader("Shaders/hdr.vert.glsl", "Shaders/ssao.frag.glsl"),
 	LinearizeDepthShader("Shaders/hdr.vert.glsl", "Shaders/linearizeDepth.frag.glsl"),
 	GammaShader("Shaders/hdr.vert.glsl", "Shaders/gamma.frag.glsl"),
 	ParticleShader("Shaders/instanced.vert.glsl", "Shaders/instanced.frag.glsl"),
@@ -46,8 +44,10 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	IntegrateBRDFShader("Shaders/hdr.vert.glsl", "Shaders/integrateBRDF.frag.glsl"),
 	Text2DShader("Shaders/text2D.vert.glsl", "Shaders/text2D.frag.glsl"),
 	EditorDebugShader("Shaders/debug.vert.glsl", "Shaders/debug.frag.glsl"),
+	DebugQuadDepthPrepassShader("Shaders/debugQuadDepthPrepass.vert.glsl", "Shaders/debugQuadDepthPrepass.frag.glsl"),
+	DebugQuadLightCullingShader("Shaders/debugQuadLightCulling.vert.glsl", "Shaders/debugQuadLightCulling.frag.glsl"),
 	DebugLightAccumShader("Shaders/debugLightAccum.vert.glsl", "Shaders/debugLightAccum.frag.glsl"),
-	DebugQuadDepthPrepassShader("Shaders/debugQuadDepthPrepass.vert.glsl", "Shaders/debugQuadDepthPrepass.frag.glsl")
+	DebugTextureInputsShader("Shaders/lightAccumulation.vert.glsl", "Shaders/lightAccumulationTexDebug.frag.glsl")
 {
 	LightAccumulationShader.RegisterUniform("float", "uTime");
 	LightAccumulationShader.RegisterUniform("vec4", "uViewPosition");
@@ -80,6 +80,9 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	LightAccumulationShader.RegisterUniform("int", "uWorkGroupsX");
 	LightAccumulationShader.RegisterUniform("int", "uWorkGroupsY");
 
+	HDRShader.RegisterUniform("sampler2D", "uHdrBuffer");
+	HDRShader.RegisterUniform("float", "uExposure");
+
 	SkyboxShader.RegisterUniform("mat4", "uClipFromWorld");
 	SkyboxShader.RegisterUniform("float", "uTime");
 
@@ -108,6 +111,9 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	LinearizeDepthShader.RegisterUniform("float", "uFar");
 
 	EditorDebugShader.RegisterUniform("mat4", "uMVP");
+
+	GammaShader.RegisterUniform("sampler2D", "uImage");
+	GammaShader.RegisterUniform("float", "uGamma");
 }
 
 void TiledForwardRenderer::Init()
@@ -397,8 +403,6 @@ void TiledForwardRenderer::Render(const SceneView& sceneView)
 	
 	PostTonemapper(sceneView);
 
-	// PostSSAO(cameraCmp);
-
 	EditorDebug(sceneView);
 
 	UIText2D(sceneView);
@@ -635,11 +639,10 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 
 void TiledForwardRenderer::RenderSkybox(const SceneView& sceneView)
 {
-	float time = (float)TimeSystem::GetTimerElapsedTime(sceneView.WorldData, eEngineTimer::GAMEPLAY);
+	if (SkyboxCapture.GetEnvCubemap() > 0)
+	{
+		float time = (float)TimeSystem::GetTimerElapsedTime(sceneView.WorldData, eEngineTimer::GAMEPLAY);
 	 
-	// const SkyboxWorldComponent* skyboxWorldCmp = world->GetWorldComponent<SkyboxWorldComponent>();
-	// if (skyboxWorldCmp != nullptr)
-	// {
 		const Matrix clipFromView = sceneView.CameraCmp->GetClipFromView();
 		Matrix viewFromWorld = sceneView.CameraCmp->GetViewFromWorld();
 		// center cube in view space by setting translation to 0 for x, y and z.
@@ -650,22 +653,18 @@ void TiledForwardRenderer::RenderSkybox(const SceneView& sceneView)
 
 		Matrix clipFromWorld = clipFromView * viewFromWorld;
 
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOhdr);
+
 		SkyboxShader.BindProgram();
 		SkyboxShader.SetUniform("uClipFromWorld", clipFromWorld);
 		SkyboxShader.SetUniform("uTime", time);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, FBOhdr);
+		SkyboxShader.BindSamplerCube("uCubemap", 0, SkyboxCapture.GetEnvCubemap());
 		
 		glBindFragDataLocation((GLuint)LightAccumulationShader.GetProgramHandle(), 0, "color");
 		glBindFragDataLocation((GLuint)LightAccumulationShader.GetProgramHandle(), 1, "normal");
 		
 		glDisable(GL_CULL_FACE);
 		glDepthFunc(GL_LEQUAL);
-
-		glActiveTexture(GL_TEXTURE0);
-		// glBindTexture(GL_TEXTURE_CUBE_MAP, SkyboxCapture.GetEnvCubemap());
-		// glBindTexture(GL_TEXTURE_CUBE_MAP, SkyboxCapture.GetIrradianceMap());
-		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyboxCapture.GetPrefilterMap());
 
 		glBindVertexArray(RDI->PrimitivesCube->VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -677,7 +676,7 @@ void TiledForwardRenderer::RenderSkybox(const SceneView& sceneView)
 		glDepthFunc(GL_LESS);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	// }
+	}
 }
 
 void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
@@ -879,7 +878,7 @@ void TiledForwardRenderer::LinearizeDepth(const SceneView& sceneView)
 
 void TiledForwardRenderer::PostTonemapper(const SceneView& sceneView)
 {
-	// gConsole.LogInfo("TiledForwardRenderer::Tonemapper");
+	// gConsole.LogInfo("TiledForwardRenderer::PostTonemapper");
 
 	float exposure = 1.0f;
 	const PostprocessSettingsComponent* postCmp = sceneView.CameraCmp->GetSibling<PostprocessSettingsComponent>();
@@ -887,70 +886,11 @@ void TiledForwardRenderer::PostTonemapper(const SceneView& sceneView)
 		exposure = postCmp->Exposure;
 	}
 
-	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost0);	
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost0);
 
 	HDRShader.BindProgram();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, ColorBuffer);
+	HDRShader.BindSampler("uHdrBuffer", 0, ColorBuffer);
 	HDRShader.SetUniform("uExposure", exposure);
-
-	glBindVertexArray(RDI->PrimitivesQuad->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void TiledForwardRenderer::PostSSAO(const SceneView& sceneView)
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost1);
-
-	// based on: http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
-	static Dynarray<Vector> ssaoKernel;
-	if (ssaoKernel.GetSize() <= 0) {
-		gConsole.LogInfo("TiledForwardRenderer::PostSSAO generating kernel");
-		for (int i = 0; i < 16; ++i) {
-			ssaoKernel.PushBack(Vector(
-				RandomRange(-1.0f, 1.0f),
-				RandomRange(-1.0f, 1.0f),
-				RandomRange( 0.0f, 1.0f)
-			));
-			ssaoKernel[i].Normalize();
-			ssaoKernel[i] *= RandomRange(0.0f, 1.0f);
-			float scale = float(i) / 16.0f;
-			scale = Lerp(0.1f, 1.0f, scale * scale);
-			ssaoKernel[i] *= scale;
-			gConsole.LogInfo("TiledForwardRenderer::PostSSAO kernel #{} {}", i, ssaoKernel[i]);
-		}
-	}
-
-	SSAOShader.BindProgram();
-	for (int i = 0; i < 16; ++i) {
-		SSAOShader.SetUniform(String("uKernel[") + String::From(i) + "]", ssaoKernel[i]);
-	}
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, PostColorBuffer0);
-	SSAOShader.SetUniform("uBeauty", 0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, NormalBuffer);
-	SSAOShader.SetUniform("uNormal", 1);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, PreDepthBuffer);
-	SSAOShader.SetUniform("uDepth", 2);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, RDI->SSAONoiseMap);
-	SSAOShader.SetUniform("uNoise", 3);
-	SSAOShader.SetUniform("uScreenRes", Vector(
-		(float)(RDI->GetScreenSize().Width),
-		(float)(RDI->GetScreenSize().Height),
-		1.0f / ((float)RDI->GetScreenSize().Width),
-		1.0f / ((float)RDI->GetScreenSize().Height))
-	);
-	SSAOShader.SetUniform("uFarClippingPlane", sceneView.CameraCmp->GetClippingPlaneFar());
-	SSAOShader.SetUniform("uBias", 0.3f);
-	SSAOShader.SetUniform("uViewFromWorld", sceneView.CameraCmp->GetViewFromWorld());
 
 	glBindVertexArray(RDI->PrimitivesQuad->VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -1053,8 +993,7 @@ void TiledForwardRenderer::UIText2D(const SceneView& sceneView)
 void TiledForwardRenderer::PostGamma()
 {
 	GammaShader.BindProgram();
-	glActiveTexture(GL_TEXTURE0);	
-	glBindTexture(GL_TEXTURE_2D, PostColorBuffer0);
+	GammaShader.BindSampler("uImage", 0, PostColorBuffer0);
 	GammaShader.SetUniform("uGamma", 2.2f);
 
 	glBindVertexArray(RDI->PrimitivesQuad->VAO);
