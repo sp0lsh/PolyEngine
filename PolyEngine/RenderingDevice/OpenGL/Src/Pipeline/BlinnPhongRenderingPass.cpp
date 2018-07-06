@@ -144,7 +144,7 @@ void BlinnPhongRenderingPass::OnRun(World* world, const CameraComponent* camera,
 		const EntityTransform& transform = meshCmp->GetTransform();
 
 		if ( passType == ePassType::BY_MATERIAL &&
-			(meshCmp->IsTransparent() || meshCmp->GetShadingModel() != eShadingModel::PHONG))
+			(meshCmp->GetBlendingMode() == eBlendingMode::TRANSLUCENT || meshCmp->GetShadingModel() != eShadingMode::PBR))
 		{
 			continue;
 		}
