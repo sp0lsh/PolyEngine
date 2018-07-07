@@ -634,7 +634,7 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 		}
 	}
 	
-	CHECK_GL_ERR();
+	// CHECK_GL_ERR();
 
 	// Clear bound resources
 	glBindVertexArray(0);
@@ -650,7 +650,7 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	CHECK_GL_ERR();
+	// CHECK_GL_ERR();
 }
 
 void TiledForwardRenderer::RenderSkybox(const SceneView& sceneView)
@@ -782,7 +782,7 @@ void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
 		}
 	}
 	
-	CHECK_GL_ERR();
+	// CHECK_GL_ERR();
 
 	// Clear bound resources
 	glBindVertexArray(0);
@@ -798,7 +798,7 @@ void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 
-	CHECK_GL_ERR();
+	// CHECK_GL_ERR();
 }
 
 void TiledForwardRenderer::RenderParticleUnlit(World* world, const CameraComponent* cameraCmp)
