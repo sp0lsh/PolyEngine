@@ -80,13 +80,16 @@ void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<MeshRenderingComponent>())
 	{
 		const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
-		if (meshCmp->GetBlendingMode() == eBlendingMode::OPAUQE)
+		if (meshCmp->GetShadingModel() == eShadingMode::PBR)
 		{
-			sceneView.OpaqueQueue.PushBack(meshCmp);
-		}
-		else if (meshCmp->GetBlendingMode() == eBlendingMode::TRANSLUCENT)
-		{
-			sceneView.TranslucentQueue.PushBack(meshCmp);
+			if (meshCmp->GetBlendingMode() == eBlendingMode::OPAUQE)
+			{
+				sceneView.OpaqueQueue.PushBack(meshCmp);
+			}
+			else if (meshCmp->GetBlendingMode() == eBlendingMode::TRANSLUCENT)
+			{
+				sceneView.TranslucentQueue.PushBack(meshCmp);
+			}
 		}
 	}
 
