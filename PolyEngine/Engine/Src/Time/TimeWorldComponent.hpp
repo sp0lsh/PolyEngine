@@ -19,6 +19,7 @@ namespace Poly
 		friend double TimeSystem::GetTimerElapsedTime(World* world, eEngineTimer timerType);
 		friend double TimeSystem::GetTimerMultiplier(World* world, size_t id);
 		friend double TimeSystem::GetTimerMultiplier(World* world, eEngineTimer timerType);
+		friend void TimeSystem::SetTimerMultiplier(World* world, size_t id, double multiplier);
 	public:	
 		TimeWorldComponent();
 

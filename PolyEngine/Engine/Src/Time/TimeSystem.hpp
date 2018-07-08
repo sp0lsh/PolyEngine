@@ -20,5 +20,8 @@ namespace Poly
 
 		double ENGINE_DLLEXPORT GetTimerMultiplier(World* world, size_t timerId);
 		double ENGINE_DLLEXPORT GetTimerMultiplier(World* world, eEngineTimer timerType);
+
+		void ENGINE_DLLEXPORT SetTimerMultiplier(World* world, size_t id, double multiplier);
+
 	}
 }

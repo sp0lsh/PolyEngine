@@ -18,7 +18,7 @@ namespace Poly
 		void SetGlobalTranslation(const Vector& position);
 
 		const Quaternion& GetGlobalRotation() const;
-		const Quaternion& GetLocalRotation() const { return LocalRotation; };
+		const Quaternion& GetLocalRotation() const { return LocalRotations; };
 		void SetLocalRotation(const Quaternion& quaternion);
 		void SetGlobalRotation(const Quaternion& quaternion);
 
@@ -38,7 +38,7 @@ namespace Poly
 		Entity* Owner = nullptr;
 		Vector LocalTranslation;
 		mutable Vector GlobalTranslation;
-		Quaternion LocalRotation;
+		Quaternion LocalRotations;
 		mutable Quaternion GlobalRotation;
 		Vector LocalScale = Vector(1.f, 1.f, 1.f);
 		mutable Vector GlobalScale = Vector(1.f, 1.f, 1.f);

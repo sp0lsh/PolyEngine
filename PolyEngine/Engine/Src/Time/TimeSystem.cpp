@@ -93,3 +93,12 @@ double TimeSystem::GetTimerMultiplier(World * world, eEngineTimer timerType)
 {
 	return world->GetWorldComponent<TimeWorldComponent>()->Timers.at((size_t)timerType).GetMultiplier();
 }
+
+void TimeSystem::SetTimerMultiplier(World* world, size_t id, double multiplier)
+{
+	TimeWorldComponent* timeComponent = world->GetWorldComponent<TimeWorldComponent>();
+	if (timeComponent->Timers.count(id) == 0)
+		throw std::invalid_argument("Timer with given id does not exist.");
+	else
+		timeComponent->Timers[id].SetMultiplier(multiplier);
+}

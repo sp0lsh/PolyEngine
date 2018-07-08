@@ -15,7 +15,7 @@ void EntityTransform::UpdateParentTransform()
 		
 		parentTransform.UpdateGlobalTransformationCache();
 		LocalTranslation = LocalTranslation - parentTransform.GlobalTranslation;
-		LocalRotation = LocalRotation * parentTransform.GlobalRotation.GetConjugated();
+		LocalRotations = LocalRotations * parentTransform.GlobalRotation.GetConjugated();
 		Vector parentGlobalScale = parentTransform.GlobalScale;
 		LocalScale.X = LocalScale.X / parentGlobalScale.X;
 		LocalScale.Y = LocalScale.Y / parentGlobalScale.Y;
@@ -62,7 +62,7 @@ const Quaternion& EntityTransform::GetGlobalRotation() const
 //------------------------------------------------------------------------------
 void EntityTransform::SetLocalRotation(const Quaternion& quaternion)
 {
-	LocalRotation = quaternion;
+	LocalRotations = quaternion;
 	LocalDirty = true;
 	SetGlobalDirty();
 }
@@ -118,7 +118,7 @@ const Matrix& EntityTransform::GetWorldFromModel() const
 void EntityTransform::SetParentFromModel(const Matrix& parentFromModel)
 {
 	ParentFromModel = parentFromModel;
-	parentFromModel.Decompose(LocalTranslation, LocalRotation, LocalScale);
+	parentFromModel.Decompose(LocalTranslation, LocalRotations, LocalScale);
 	LocalDirty = false;
 	SetGlobalDirty();
 }
@@ -129,7 +129,7 @@ bool EntityTransform::UpdateLocalTransformationCache() const
 	if (LocalDirty)
 	{
 		Matrix translation;
-		Matrix rotation = LocalRotation.ToRotationMatrix();
+		Matrix rotation = LocalRotations.ToRotationMatrix();
 		Matrix scale;
 		translation.SetTranslation(LocalTranslation);
 		scale.SetScale(LocalScale);
