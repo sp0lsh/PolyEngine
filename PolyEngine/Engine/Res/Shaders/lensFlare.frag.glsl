@@ -17,7 +17,7 @@ float nrand(vec2 n)
 
 vec3 flare()
 {	
-	float brightThreshold = 1.0;
+	float brightThreshold = 1.5;
     float sizeX = 0.3;
     float sizeY = 0.005;
 	vec3 tint = vec3(0.1, 0.1, 1.0);
@@ -35,7 +35,7 @@ vec3 flare()
 		vec3 inputTex = texture(uImage, vUV + offset ).rgb;
 		float luminance = dot(inputTex, vec3(0.2126, 0.7152, 0.0722));
 		vec3 brighter = mix(vec3(0.0), inputTex, step(brightThreshold, luminance));
-        weight += 1.0;
+        weight += 0.01;
 		
         sum += brighter;
 	}
