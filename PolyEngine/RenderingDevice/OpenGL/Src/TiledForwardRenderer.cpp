@@ -50,6 +50,7 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	HDRShader("Shaders/hdr.vert.glsl", "Shaders/hdr.frag.glsl"),
 	SkyboxShader("Shaders/skybox.vert.glsl", "Shaders/skybox.frag.glsl"),
 	LinearizeDepthShader("Shaders/hdr.vert.glsl", "Shaders/linearizeDepth.frag.glsl"),
+	LensFlareShader("Shaders/hdr.vert.glsl", "Shaders/lensFlare.frag.glsl"),
 	GammaShader("Shaders/hdr.vert.glsl", "Shaders/gamma.frag.glsl"),
 	MotionBlurShader("Shaders/hdr.vert.glsl", "Shaders/motionblur.frag.glsl"),
 	DOFBokehShader("Shaders/hdr.vert.glsl", "Shaders/dof_pass_bokeh.frag.glsl"),
@@ -179,6 +180,9 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	LinearizeDepthShader.RegisterUniform("float", "uFar");
 
 	EditorDebugShader.RegisterUniform("mat4", "uMVP");
+
+	LensFlareShader.RegisterUniform("sampler2D", "uImage");
+	LensFlareShader.RegisterUniform("float", "uLensFlareScale");
 
 	GammaShader.RegisterUniform("sampler2D", "uSplashImage");
 	GammaShader.RegisterUniform("vec4", "uSplashTint");
@@ -537,12 +541,14 @@ void TiledForwardRenderer::Render(const SceneView& sceneView)
 
 	PostDepthOfField(sceneView);
 	
+	PostLensFlares(sceneView);
+		
 	PostBloom(sceneView);
 	
 	PostTonemapper(sceneView);
 	
 	PostGamma(sceneView);
-	
+		
 	EditorDebug(sceneView);
 	
 	UIText2D(sceneView);
@@ -1192,6 +1198,34 @@ void TiledForwardRenderer::PostDepthOfField(const SceneView& sceneView)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void TiledForwardRenderer::PostLensFlares(const SceneView& sceneView)
+{
+	gConsole.LogInfo("TiledForwardRenderer::PostLensFlares");
+
+	float time = (float)TimeSystem::GetTimerElapsedTime(sceneView.WorldData, eEngineTimer::GAMEPLAY);
+
+	// float exposure = 1.0f;
+	// const PostprocessSettingsComponent* postCmp = sceneView.CameraCmp->GetSibling<PostprocessSettingsComponent>();
+	// if (postCmp) {
+	// 	exposure = postCmp->Exposure;
+	// }
+
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost1);
+
+	LensFlareShader.BindProgram();
+	LensFlareShader.BindSampler("uImage", 0, PostColorBuffer0);
+	LensFlareShader.SetUniform("uBrightThreshold", 1.0f);
+	LensFlareShader.SetUniform("uLensFlareScale", 1.0f);
+	LensFlareShader.SetUniform("uTime", time);
+
+	glBindVertexArray(RDI->PrimitivesQuad->VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
 void TiledForwardRenderer::PostBloom(const SceneView& sceneView)
 {
 	float bloomThreshold = 1.0f;
@@ -1210,7 +1244,7 @@ void TiledForwardRenderer::PostBloom(const SceneView& sceneView)
 
 	BloomBrightShader.BindProgram();
 	BloomBrightShader.SetUniform("uBrightThreshold", bloomThreshold);
-	BloomBrightShader.BindSampler("uImage", 0, PostColorBuffer0);
+	BloomBrightShader.BindSampler("uImage", 0, PostColorBuffer1);
 	// BloomBrightShader.BindSampler("uImage", 0, ColorBuffer);
 	
 	glBindVertexArray(RDI->PrimitivesQuad->VAO);
@@ -1237,11 +1271,11 @@ void TiledForwardRenderer::PostBloom(const SceneView& sceneView)
 	
 	glViewport(0, 0, screenSize.Width, screenSize.Height);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost1);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostColorBuffer1, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostColorBuffer0, 0);
 
 	BloomApplyShader.BindProgram();
-	BloomApplyShader.BindSampler("uImage", 0, PostColorBuffer0);
+	BloomApplyShader.BindSampler("uImage", 0, PostColorBuffer1);
 	BloomApplyShader.BindSampler("uBloom", 1, RTBloom.GetReadTarget());
 	BloomApplyShader.SetUniform("uBloomScale", bloomScale);
 
@@ -1262,10 +1296,10 @@ void TiledForwardRenderer::PostTonemapper(const SceneView& sceneView)
 		exposure = postCmp->Exposure;
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost0);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost1);
 
 	HDRShader.BindProgram();
-	HDRShader.BindSampler("uHdrBuffer", 0, PostColorBuffer1);
+	HDRShader.BindSampler("uHdrBuffer", 0, PostColorBuffer0);
 	HDRShader.SetUniform("uExposure", exposure);
 
 	glBindVertexArray(RDI->PrimitivesQuad->VAO);
@@ -1296,7 +1330,7 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	}
 
 	GammaShader.BindProgram();
-	GammaShader.BindSampler("uImage", 0, PostColorBuffer0);
+	GammaShader.BindSampler("uImage", 0, PostColorBuffer1);
 	GammaShader.BindSampler("uSplashImage", 1, Splash->GetTextureProxy()->GetResourceID());
 	GammaShader.SetUniform("uSplashTint", Color(1.0f, 0.0f, 0.0f, 1.0f) * 0.8f);
 	GammaShader.SetUniform("uTime", time);
