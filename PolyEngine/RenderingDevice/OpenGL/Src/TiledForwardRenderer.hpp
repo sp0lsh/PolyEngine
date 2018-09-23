@@ -107,7 +107,7 @@ namespace Poly {
 		GLuint FBOShadowDepthMap;
 
 		// Render pass for IBL environment
-		EnvCapture SkyboxCapture;
+		EnvCapture EnvironmentCapture;
 		RenderTargetPingPong RTBloom;
 		TextureResource* Splash;
 

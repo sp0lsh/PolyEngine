@@ -42,7 +42,7 @@ void RenderTargetPingPong::Deinit()
 
 
 TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
-	: IRendererInterface(rdi), SkyboxCapture(rdi), LastViewportRect(Vector2f::ZERO, Vector2f::ONE),
+	: IRendererInterface(rdi), EnvironmentCapture(rdi), LastViewportRect(Vector2f::ZERO, Vector2f::ONE),
 	ShadowMapShader("Shaders/shadowMap.vert.glsl", "Shaders/shadowMap.frag.glsl"),
 	DepthShader("Shaders/depth.vert.glsl", "Shaders/depth.frag.glsl"),
 	LightCullingShader("Shaders/lightCulling.comp.glsl"),
@@ -572,20 +572,15 @@ void TiledForwardRenderer::Render(const SceneView& sceneView)
 
 void TiledForwardRenderer::UpdateEnvCapture(const SceneView& sceneView)
 {
-	// gConsole.LogInfo("TiledForwardRenderer::UpdateEnvCapture");
-
-	if (SkyboxCapture.GetIsDirty())
+	const SkyboxWorldComponent* SkyboxWorldCmp = sceneView.WorldData->GetWorldComponent<SkyboxWorldComponent>();
+	if (SkyboxWorldCmp == nullptr)
 	{
-		const SkyboxWorldComponent* SkyboxWorldCmp = sceneView.WorldData->GetWorldComponent<SkyboxWorldComponent>();
-		if (SkyboxWorldCmp != nullptr)
-		{
-			SkyboxCapture.UpdateEnv(SkyboxWorldCmp);
-		}
-		else
-		{
-			gConsole.LogInfo("TiledForwardRenderer::UpdateEnvCapture SkyboxWorldComponent not found!");
-		}
+		gConsole.LogInfo("TiledForwardRenderer::UpdateEnvCapture SkyboxWorldComponent not found!");
 	}
+	else
+	{
+		EnvironmentCapture.PrecalculateResourcesIBL(SkyboxWorldCmp);
+	}	
 }
 
 void TiledForwardRenderer::RenderEquiCube(const SceneView& sceneView)
@@ -603,7 +598,7 @@ void TiledForwardRenderer::RenderEquiCube(const SceneView& sceneView)
 	glBindFragDataLocation((GLuint)EquiToCubemapShader.GetProgramHandle(), (GLuint)1, "normal");
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, SkyboxCapture.GetHDRPanorama());
+	glBindTexture(GL_TEXTURE_2D, EnvironmentCapture.GetCurrentHDRPanorama());
 	EquiToCubemapShader.SetUniform("uEquirectangularMap", 0);
 
 	// glDisable(GL_CULL_FACE);
@@ -809,8 +804,8 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 	}
 	LightAccumulationShader.SetUniform("uDirectionalLightCount", dirLightsCount);
 	
-	LightAccumulationShader.BindSamplerCube("uIrradianceMap", 0, SkyboxCapture.GetIrradianceMap());
-	LightAccumulationShader.BindSamplerCube("uPrefilterMap", 1, SkyboxCapture.GetPrefilterMap());
+	LightAccumulationShader.BindSamplerCube("uIrradianceMap", 0, EnvironmentCapture.GetCurrentIrradianceMap());
+	LightAccumulationShader.BindSamplerCube("uPrefilterMap", 1, EnvironmentCapture.GetCurrentPrefilterMap());
 	LightAccumulationShader.BindSampler("uBrdfLUT", 2, PreintegratedBrdfLUT);
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, LightBuffer);
@@ -881,7 +876,7 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 
 void TiledForwardRenderer::RenderSkybox(const SceneView& sceneView)
 {
-	if (SkyboxCapture.GetEnvCubemap() > 0)
+	if (EnvironmentCapture.GetCurrentEnvCubemap() > 0)
 	{
 		Color tint = Color::WHITE;
 		SkyboxWorldComponent* skyboxCmp = sceneView.WorldData->GetWorldComponent<SkyboxWorldComponent>();
@@ -905,7 +900,7 @@ void TiledForwardRenderer::RenderSkybox(const SceneView& sceneView)
 		SkyboxShader.BindProgram();
 		SkyboxShader.SetUniform("uTint", tint);
 		SkyboxShader.SetUniform("uClipFromWorld", clipFromWorld);
-		SkyboxShader.BindSamplerCube("uCubemap", 0, SkyboxCapture.GetEnvCubemap());
+		SkyboxShader.BindSamplerCube("uCubemap", 0, EnvironmentCapture.GetCurrentEnvCubemap());
 		
 		glBindFragDataLocation((GLuint)LightAccumulationShader.GetProgramHandle(), 0, "color");
 		glBindFragDataLocation((GLuint)LightAccumulationShader.GetProgramHandle(), 1, "normal");
@@ -966,8 +961,8 @@ void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
 	}
 	TranslucentShader.SetUniform("uDirectionalLightCount", dirLightsCount);
 
-	TranslucentShader.BindSamplerCube("uIrradianceMap", 0, SkyboxCapture.GetIrradianceMap());
-	TranslucentShader.BindSamplerCube("uPrefilterMap", 1, SkyboxCapture.GetPrefilterMap());
+	TranslucentShader.BindSamplerCube("uIrradianceMap", 0, EnvironmentCapture.GetCurrentIrradianceMap());
+	TranslucentShader.BindSamplerCube("uPrefilterMap", 1, EnvironmentCapture.GetCurrentPrefilterMap());
 	TranslucentShader.BindSampler("uBrdfLUT", 2, PreintegratedBrdfLUT);
 
 	glBindFragDataLocation((GLuint)TranslucentShader.GetProgramHandle(), 0, "oColor");
