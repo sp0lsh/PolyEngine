@@ -1338,6 +1338,9 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 {
 	float time = (float)TimeSystem::GetTimerElapsedTime(sceneView.WorldData, eEngineTimer::GAMEPLAY);
 
+	float planeNear = sceneView.CameraCmp->GetClippingPlaneNear();
+	float planeFar = sceneView.CameraCmp->GetClippingPlaneFar();
+
 	const ScreenSize screenSize = RDI->GetScreenSize();
 	float viewportWidth = sceneView.Rect.GetSize().X * screenSize.Width;
 	float viewportHeight = sceneView.Rect.GetSize().Y * screenSize.Height;
@@ -1346,23 +1349,33 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	float vignetteScale = 0.1f;
 	float abberationScale = 0.1f;
 	Color tint = Color::WHITE;
+	Color fogColor = Color::WHITE;
+	float fogDensity = 0.66f;
 	float gamma = 2.2f;
+
 	const PostprocessSettingsComponent* postCmp = sceneView.CameraCmp->GetSibling<PostprocessSettingsComponent>();
 	if (postCmp) {
-		grainScale = postCmp->GrainScale;
-		vignetteScale = postCmp->VignetteScale;
-		abberationScale = postCmp->AbberationScale;
-		gamma = postCmp->Gamma;
-		tint = postCmp->Tint;
+		grainScale		= postCmp->GrainScale;
+		vignetteScale	= postCmp->VignetteScale;
+		abberationScale	= postCmp->AbberationScale;
+		tint			= postCmp->Tint;
+		fogColor		= postCmp->FogColor;
+		fogDensity		= postCmp->FogDensity;
+		gamma			= postCmp->Gamma;
 	}
 
 	GammaShader.BindProgram();
 	GammaShader.BindSampler("uImage", 0, PostColorBuffer1);
-	GammaShader.BindSampler("uSplashImage", 1, Splash->GetTextureProxy()->GetResourceID());
+	GammaShader.BindSampler("uDepth", 1, LinearDepth);
+	GammaShader.BindSampler("uSplashImage", 2, Splash->GetTextureProxy()->GetResourceID());
 	GammaShader.SetUniform("uSplashTint", Color(1.0f, 0.0f, 0.0f, 1.0f) * 0.8f);
 	GammaShader.SetUniform("uTime", time);
 	GammaShader.SetUniform("uRes", Vector(viewportWidth, viewportHeight, 1.0f / viewportWidth, 1.0f / viewportHeight));
 	GammaShader.SetUniform("uTint", tint);
+	GammaShader.SetUniform("uFogColor", fogColor);
+	GammaShader.SetUniform("uFogDensity", fogDensity);
+	GammaShader.SetUniform("uPlaneFar", planeFar);
+	GammaShader.SetUniform("uPlaneNear", planeNear);
 	GammaShader.SetUniform("uGrainScale", grainScale);
 	GammaShader.SetUniform("uVignetteScale", vignetteScale);
 	GammaShader.SetUniform("uAbberationScale", abberationScale);
