@@ -111,6 +111,8 @@ namespace Poly
 		/// @param Entity* Pointer to new parent
 		void SetParent(Entity* parent);
 
+		void ReleaseFromParent();
+
 		/// Adds new child to this entity. Child cannot be parent of this entity, equal to this entity or nullptr.
 		/// @param Entity* Pointer to new child
 		inline void AddChild(Entity* child) { ASSERTE(child, "Child cannot be null!"); child->SetParent(this); }
@@ -131,7 +133,6 @@ namespace Poly
 	private:
 		Entity(Scene* world, Entity* parent = nullptr);
 
-		void ReleaseFromParent();
 		void SetBBoxDirty();
 
 		Entity* Parent = nullptr;

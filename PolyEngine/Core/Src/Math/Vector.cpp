@@ -12,7 +12,7 @@ const Vector Vector::UNIT_X = Vector(1.0f, 0.0f, 0.0f);
 const Vector Vector::UNIT_Y = Vector(0.0f, 1.0f, 0.0f);
 const Vector Vector::UNIT_Z = Vector(0.0f, 0.0f, 1.0f);
 
-//------------------------------------------------------------------------------
+
 bool Vector::operator==(const Vector& rhs) const {
 #if DISABLE_SIMD
   return Cmpf(X, rhs.X) && Cmpf(Y, rhs.Y) && Cmpf(Z, rhs.Z) && Cmpf(W, rhs.W);
@@ -21,7 +21,7 @@ bool Vector::operator==(const Vector& rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::operator+(const Vector& rhs) const {
 #if DISABLE_SIMD
   return Vector(X+rhs.X, Y+rhs.Y, Z+rhs.Z);
@@ -30,7 +30,7 @@ Vector Vector::operator+(const Vector& rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::operator-(const Vector& rhs) const {
 #if DISABLE_SIMD
   return Vector(X-rhs.X, Y-rhs.Y, Z-rhs.Z);
@@ -39,7 +39,7 @@ Vector Vector::operator-(const Vector& rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::operator+=(const Vector& rhs) {
 #if DISABLE_SIMD
   X+=rhs.X; Y+=rhs.Y; Z+=rhs.Z;
@@ -50,7 +50,7 @@ Vector& Vector::operator+=(const Vector& rhs) {
   return *this;
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::operator-=(const Vector& rhs){
 #if DISABLE_SIMD
   X-=rhs.X; Y-=rhs.Y; Z-=rhs.Z;
@@ -61,7 +61,7 @@ Vector& Vector::operator-=(const Vector& rhs){
   return *this;
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::operator+(float rhs) const {
 #if DISABLE_SIMD
 	return Vector(X+rhs, Y+rhs, Z+rhs);
@@ -71,7 +71,7 @@ Vector Vector::operator+(float rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::operator-(float rhs) const {
 #if DISABLE_SIMD
 	return Vector(X - rhs, Y - rhs, Z - rhs);
@@ -81,7 +81,7 @@ Vector Vector::operator-(float rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::operator*(float rhs) const {
 #if DISABLE_SIMD
   return Vector(X*rhs, Y*rhs, Z*rhs);
@@ -91,7 +91,7 @@ Vector Vector::operator*(float rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::operator/(float rhs) const {
 #if DISABLE_SIMD
   return Vector(X/rhs, Y/rhs, Z/rhs);
@@ -101,7 +101,7 @@ Vector Vector::operator/(float rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::operator+=(float rhs) {
 #if DISABLE_SIMD
 	X += rhs; Y += rhs; Z += rhs;
@@ -113,7 +113,7 @@ Vector& Vector::operator+=(float rhs) {
 	return *this;
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::operator-=(float rhs) {
 #if DISABLE_SIMD
 	X -= rhs; Y -= rhs; Z -= rhs;
@@ -125,7 +125,7 @@ Vector& Vector::operator-=(float rhs) {
 	return *this;
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::operator*=(float rhs) {
 #if DISABLE_SIMD
   X*=rhs; Y*=rhs; Z*=rhs;
@@ -137,7 +137,7 @@ Vector& Vector::operator*=(float rhs) {
   return *this;
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::operator/=(float rhs) {
 #if DISABLE_SIMD
   X/=rhs; Y/=rhs; Z/=rhs;
@@ -149,12 +149,12 @@ Vector& Vector::operator/=(float rhs) {
   return *this;
 }
 
-//------------------------------------------------------------------------------
+
 //TODO maybe inline this?
 float Vector::Length() const { return std::sqrt(LengthSquared()); }
 float Vector::LengthSquared() const { return Dot(*this); }
 
-//------------------------------------------------------------------------------
+
 float Vector::Dot(const Vector& rhs) const {
 #if DISABLE_SIMD
   return X*rhs.X + Y*rhs.Y + Z*rhs.Z;
@@ -165,7 +165,7 @@ float Vector::Dot(const Vector& rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::Cross(const Vector& rhs) const {
   //TODO vectorize
 #if DISABLE_SIMD
@@ -195,7 +195,7 @@ Vector Vector::Cross(const Vector& rhs) const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector& Vector::Normalize() {
 #if DISABLE_SIMD
   *this/=Length();
@@ -207,7 +207,7 @@ Vector& Vector::Normalize() {
   return *this;
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::GetNormalized() const {
 #if DISABLE_SIMD
   return *this/Length();
@@ -217,7 +217,7 @@ Vector Vector::GetNormalized() const {
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::Max(const Vector& a, const Vector& b)
 {
 #if DISABLE_SIMD
@@ -232,7 +232,7 @@ Vector Vector::Max(const Vector& a, const Vector& b)
 #endif
 }
 
-//------------------------------------------------------------------------------
+
 Vector Vector::Min(const Vector& a, const Vector& b)
 {
 #if DISABLE_SIMD
@@ -248,7 +248,7 @@ Vector Vector::Min(const Vector& a, const Vector& b)
 }
 
 namespace Poly {
-	//------------------------------------------------------------------------------
+	
 	std::ostream& operator<< (std::ostream& stream, const Vector& vec) {
 		return stream << "Vec[ " << vec.X << " " << vec.Y << " " << vec.Z << " ]";
 	}
