@@ -9,14 +9,17 @@ Poly::Mesh::~Mesh()
 	if (AlbedoMap)
 		ResourceManager<TextureResource>::Release(AlbedoMap);
 
-	if (RoughnessMap)
-		ResourceManager<TextureResource>::Release(RoughnessMap);
+	// if (RoughnessMap)
+	// 	ResourceManager<TextureResource>::Release(RoughnessMap);
+	// 
+	// if (MetallicMap)
+	// 	ResourceManager<TextureResource>::Release(MetallicMap);
+	// 
+	// if (AmbientOcclusionMap)
+	// 	ResourceManager<TextureResource>::Release(AmbientOcclusionMap);
 
-	if (MetallicMap)
-		ResourceManager<TextureResource>::Release(MetallicMap);
-
-	if (AmbientOcclusionMap)
-		ResourceManager<TextureResource>::Release(AmbientOcclusionMap);
+	if (ORMMap)
+		ResourceManager<TextureResource>::Release(ORMMap);
 
 	if (NormalMap)
 		ResourceManager<TextureResource>::Release(NormalMap);

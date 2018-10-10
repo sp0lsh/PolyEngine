@@ -51,8 +51,8 @@ namespace Poly
 			Color Albedo = Color::WHITE;
 			Color Emissive = Color::BLACK;
 			// TODO end
-			std::function<void(Particle*)> ParticleInitFunc		= [](ParticleEmitter::Particle* p) {};
-			std::function<void(Particle*)> ParticleUpdateFunc	= [](ParticleEmitter::Particle* p) {};
+			std::function<void(Particle*, size_t)> ParticleInitFunc	= [](ParticleEmitter::Particle* p, size_t burstIdx = 0) {};
+			std::function<void(Particle*)> ParticleUpdateFunc		= [](ParticleEmitter::Particle* p) {};
 		};
 
 		ParticleEmitter(const Settings& settings);

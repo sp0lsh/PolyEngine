@@ -12,12 +12,13 @@ static int GetDesiredChannel(eTextureUsageType usage) noexcept
 	switch (usage)
 	{
 	case eTextureUsageType::ALBEDO:
-	case eTextureUsageType::EMISSIVE:
 	case eTextureUsageType::RENDER_TARGET:
-		return 4;
+		return 0;
+	case eTextureUsageType::EMISSIVE:
 	case eTextureUsageType::AMBIENT_OCCLUSION:
 	case eTextureUsageType::METALLIC:
 	case eTextureUsageType::ROUGHNESS:
+	case eTextureUsageType::ORM:
 	case eTextureUsageType::NORMAL:
 	case eTextureUsageType::HDR:
 	case eTextureUsageType::FONT:
@@ -39,21 +40,27 @@ TextureResource::TextureResource(const String& path, eTextureUsageType usage)
 		float* Image = LoadImageHDR(path.GetCStr(), &Width, &Height, &Channels);
 	
 		gConsole.LogInfo("TextureResource::TextureResource loaded width: {}, height: {}, channels: {}", Width, Height, Channels);
-
-		TextureProxy = gEngine->GetRenderingDevice()->CreateTexture(Width, Height, desiredChannels, usage);
-		TextureProxy->SetContentHDR(Image);
-		FreeImageHDR(Image);
+		
+		if (Image)
+		{
+			TextureProxy = gEngine->GetRenderingDevice()->CreateTexture(Width, Height, Channels, usage);
+			TextureProxy->SetContentHDR(Image);
+			FreeImageHDR(Image);
+		}
 	}
 	else
 	{
-		unsigned char* Image = LoadImage(path.GetCStr(), &Width, &Height, &Channels, desiredChannels);
+		unsigned char* Image = LoadImage(path.GetCStr(), &Width, &Height, &Channels);
 
-		gConsole.LogInfo("TextureResource::TextureResource loaded width: {}, height: {}, channels: {}, desiredChannels: {}",
+		gConsole.LogInfo("TextureResource::TextureResource loaded width: {}, height: {}, channels: {}",
 			Width, Height, Channels, desiredChannels);
-
-		TextureProxy = gEngine->GetRenderingDevice()->CreateTexture(Width, Height, desiredChannels, usage);
-		TextureProxy->SetContent(Image);
-		FreeImage(Image);
+		
+		if (Image)
+		{
+			TextureProxy = gEngine->GetRenderingDevice()->CreateTexture(Width, Height, Channels, usage);
+			TextureProxy->SetContent(Image);
+			FreeImage(Image);
+		}
 	}
 }
 

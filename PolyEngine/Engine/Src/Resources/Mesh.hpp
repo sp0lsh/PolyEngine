@@ -16,9 +16,10 @@ namespace Poly
 		struct ENGINE_DLLEXPORT TextCoord { float U = 0, V = 0; };
 
 		const TextureResource* GetAlbedoMap() const { return AlbedoMap; }
-		const TextureResource* GetRoughnessMap() const { return RoughnessMap; }
-		const TextureResource* GetMetallicMap() const { return MetallicMap; }
-		const TextureResource* GetAmbientOcclusionMap() const { return AmbientOcclusionMap; }
+		// const TextureResource* GetRoughnessMap() const { return RoughnessMap; }
+		// const TextureResource* GetMetallicMap() const { return MetallicMap; }
+		// const TextureResource* GetAmbientOcclusionMap() const { return AmbientOcclusionMap; }
+		const TextureResource* GetORMMap() const { return ORMMap; }
 		const TextureResource* GetNormalMap() const { return NormalMap; }
 		const TextureResource* GetEmissiveMap() const { return EmissiveMap; }
 		size_t GetVertexCount() const { return Positions.GetSize(); }
@@ -40,9 +41,10 @@ namespace Poly
 
 	private:
 		TextureResource* AlbedoMap;
-		TextureResource* RoughnessMap;
-		TextureResource* MetallicMap;
-		TextureResource* AmbientOcclusionMap;
+		// TextureResource* RoughnessMap;
+		// TextureResource* MetallicMap;
+		// TextureResource* AmbientOcclusionMap;
+		TextureResource * ORMMap;
 		TextureResource* NormalMap;
 		TextureResource* EmissiveMap;
 		Dynarray<Vector3f> Positions;

@@ -86,10 +86,11 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 
 	LightAccumulationShader.RegisterUniform("sampler2D", "uEmissiveMap");
 	LightAccumulationShader.RegisterUniform("sampler2D", "uAlbedoMap");
-	LightAccumulationShader.RegisterUniform("sampler2D", "uRoughnessMap");
-	LightAccumulationShader.RegisterUniform("sampler2D", "uMetallicMap");
+	// LightAccumulationShader.RegisterUniform("sampler2D", "uRoughnessMap");
+	// LightAccumulationShader.RegisterUniform("sampler2D", "uMetallicMap");
+	// LightAccumulationShader.RegisterUniform("sampler2D", "uAmbientOcclusionMap");
+	TranslucentShader.RegisterUniform("sampler2D", "uORMMap");
 	LightAccumulationShader.RegisterUniform("sampler2D", "uNormalMap");
-	LightAccumulationShader.RegisterUniform("sampler2D", "uAmbientOcclusionMap");
 	LightAccumulationShader.RegisterUniform("sampler2D", "uDirShadowMap");
 	
 	for (int i = 0; i < 8; ++i)
@@ -154,10 +155,11 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 
 	TranslucentShader.RegisterUniform("sampler2D", "uEmissiveMap");
 	TranslucentShader.RegisterUniform("sampler2D", "uAlbedoMap");
-	TranslucentShader.RegisterUniform("sampler2D", "uRoughnessMap");
-	TranslucentShader.RegisterUniform("sampler2D", "uMetallicMap");
+	TranslucentShader.RegisterUniform("sampler2D", "uORMMap");
+// 	TranslucentShader.RegisterUniform("sampler2D", "uRoughnessMap");
+// 	TranslucentShader.RegisterUniform("sampler2D", "uMetallicMap");
+// 	TranslucentShader.RegisterUniform("sampler2D", "uAmbientOcclusionMap");
 	TranslucentShader.RegisterUniform("sampler2D", "uNormalMap");
-	TranslucentShader.RegisterUniform("sampler2D", "uAmbientOcclusionMap");	
 
 	for (int i = 0; i < 8; ++i)
 	{
@@ -826,26 +828,28 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 		for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
 		{
 			Material material = meshCmp->GetMaterial(i);
-			LightAccumulationShader.SetUniform("uMaterial.Emissive", material.Emissive);
-			LightAccumulationShader.SetUniform("uMaterial.Albedo", material.Albedo);
-			LightAccumulationShader.SetUniform("uMaterial.Roughness", material.Roughness); 
-			LightAccumulationShader.SetUniform("uMaterial.Metallic", material.Metallic);
-			LightAccumulationShader.SetUniform("uMaterial.OpacityMaskThreshold", material.OpacityMaskThreshold);
+			LightAccumulationShader.SetUniform("uMaterial.Emissive",				material.Emissive);
+			LightAccumulationShader.SetUniform("uMaterial.Albedo",					material.Albedo);
+			LightAccumulationShader.SetUniform("uMaterial.Roughness",				material.Roughness); 
+			LightAccumulationShader.SetUniform("uMaterial.Metallic",				material.Metallic);
+			LightAccumulationShader.SetUniform("uMaterial.OpacityMaskThreshold",	material.OpacityMaskThreshold);
 
-			const TextureResource* emissiveMap = subMesh->GetMeshData().GetEmissiveMap();
-			const TextureResource* albedoMap = subMesh->GetMeshData().GetAlbedoMap();
-			const TextureResource* roughnessMap = subMesh->GetMeshData().GetRoughnessMap();
-			const TextureResource* metallicMap = subMesh->GetMeshData().GetMetallicMap();
-			const TextureResource* normalMap = subMesh->GetMeshData().GetNormalMap();
-			const TextureResource* ambientOcclusionMap = subMesh->GetMeshData().GetAmbientOcclusionMap();
+			const TextureResource* emissiveMap	= subMesh->GetMeshData().GetEmissiveMap();
+			const TextureResource* albedoMap	= subMesh->GetMeshData().GetAlbedoMap();
+			// const TextureResource* roughnessMap			= subMesh->GetMeshData().GetRoughnessMap();
+			// const TextureResource* metallicMap			= subMesh->GetMeshData().GetMetallicMap();
+			// const TextureResource* ambientOcclusionMap	= subMesh->GetMeshData().GetAmbientOcclusionMap();
+			const TextureResource* ORMMap		= subMesh->GetMeshData().GetORMMap();
+			const TextureResource* normalMap	= subMesh->GetMeshData().GetNormalMap();
 
 			// Material textures
-			LightAccumulationShader.BindSampler("uEmissiveMap",			3, emissiveMap			? emissiveMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
-			LightAccumulationShader.BindSampler("uAlbedoMap",			4, albedoMap			? albedoMap->GetTextureProxy()->GetResourceID()				: RDI->FallbackWhiteTexture);
-			LightAccumulationShader.BindSampler("uRoughnessMap",		5, roughnessMap			? roughnessMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
-			LightAccumulationShader.BindSampler("uMetallicMap",			6, metallicMap			? metallicMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
-			LightAccumulationShader.BindSampler("uNormalMap",			7, normalMap			? normalMap->GetTextureProxy()->GetResourceID()				: RDI->FallbackNormalMap);
-			LightAccumulationShader.BindSampler("uAmbientOcclusionMap",	8, ambientOcclusionMap	? ambientOcclusionMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackWhiteTexture);
+			LightAccumulationShader.BindSampler("uEmissiveMap",	3, emissiveMap	? emissiveMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackWhiteTexture);
+			LightAccumulationShader.BindSampler("uAlbedoMap",	4, albedoMap	? albedoMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackWhiteTexture);
+			// LightAccumulationShader.BindSampler("uRoughnessMap",		5, roughnessMap			? roughnessMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
+			// LightAccumulationShader.BindSampler("uMetallicMap",			6, metallicMap			? metallicMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
+			// LightAccumulationShader.BindSampler("uAmbientOcclusionMap",	8, ambientOcclusionMap	? ambientOcclusionMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackWhiteTexture);
+			LightAccumulationShader.BindSampler("uORMMap",		5, ORMMap		? ORMMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackWhiteTexture);
+			LightAccumulationShader.BindSampler("uNormalMap",	6, normalMap	? normalMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackNormalMap);
 
 			const GLuint subMeshVAO = (GLuint)(subMesh->GetMeshProxy()->GetResourceID());
 			glBindVertexArray(subMeshVAO);
@@ -986,20 +990,22 @@ void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
 			TranslucentShader.SetUniform("uMaterial.Metallic", material.Metallic);
 			TranslucentShader.SetUniform("uMaterial.OpacityMaskThreshold", material.OpacityMaskThreshold);
 
-			const TextureResource* emissiveMap = subMesh->GetMeshData().GetEmissiveMap();
-			const TextureResource* albedoMap = subMesh->GetMeshData().GetAlbedoMap();
-			const TextureResource* roughnessMap = subMesh->GetMeshData().GetRoughnessMap();
-			const TextureResource* metallicMap = subMesh->GetMeshData().GetMetallicMap();
-			const TextureResource* normalMap = subMesh->GetMeshData().GetNormalMap();
-			const TextureResource* ambientOcclusionMap = subMesh->GetMeshData().GetAmbientOcclusionMap();
+			const TextureResource* emissiveMap	= subMesh->GetMeshData().GetEmissiveMap();
+			const TextureResource* albedoMap	= subMesh->GetMeshData().GetAlbedoMap();
+			// const TextureResource* roughnessMap = subMesh->GetMeshData().GetRoughnessMap();
+			// const TextureResource* metallicMap = subMesh->GetMeshData().GetMetallicMap();
+			// const TextureResource* ambientOcclusionMap = subMesh->GetMeshData().GetAmbientOcclusionMap();
+			const TextureResource* ORMMap		= subMesh->GetMeshData().GetORMMap();
+			const TextureResource* normalMap	= subMesh->GetMeshData().GetNormalMap();
 
 			// Material textures
-			TranslucentShader.BindSampler("uEmissiveMap",			3, emissiveMap			? emissiveMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackBlackTexture);
-			TranslucentShader.BindSampler("uAlbedoMap",				4, albedoMap			? albedoMap->GetTextureProxy()->GetResourceID()				: RDI->FallbackWhiteTexture);
-			TranslucentShader.BindSampler("uRoughnessMap",			5, roughnessMap			? roughnessMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
-			TranslucentShader.BindSampler("uMetallicMap",			6, metallicMap			? metallicMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
-			TranslucentShader.BindSampler("uNormalMap",				7, normalMap			? normalMap->GetTextureProxy()->GetResourceID()				: RDI->FallbackNormalMap);
-			TranslucentShader.BindSampler("uAmbientOcclusionMap",	8, ambientOcclusionMap	? ambientOcclusionMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackWhiteTexture);
+			TranslucentShader.BindSampler("uEmissiveMap",	3, emissiveMap	? emissiveMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackBlackTexture);
+			TranslucentShader.BindSampler("uAlbedoMap",		4, albedoMap	? albedoMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackWhiteTexture);
+			TranslucentShader.BindSampler("uORMMap",		5, ORMMap		? ORMMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackWhiteTexture);
+			// TranslucentShader.BindSampler("uRoughnessMap",			5, roughnessMap			? roughnessMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
+			// TranslucentShader.BindSampler("uMetallicMap",			6, metallicMap			? metallicMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
+			// TranslucentShader.BindSampler("uAmbientOcclusionMap",	8, ambientOcclusionMap	? ambientOcclusionMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackWhiteTexture);
+			TranslucentShader.BindSampler("uNormalMap",		6, normalMap	? normalMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackNormalMap);
 
 			const GLuint subMeshVAO = (GLuint)(subMesh->GetMeshProxy()->GetResourceID());
 			glBindVertexArray(subMeshVAO);
@@ -1038,8 +1044,8 @@ void TiledForwardRenderer::RenderParticleUnlit(Scene* world, const CameraCompone
 
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOhdr);
 
-	glDepthMask(GL_FALSE);
 	glDisable(GL_CULL_FACE);
+	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
@@ -1068,26 +1074,27 @@ void TiledForwardRenderer::RenderParticleUnlit(Scene* world, const CameraCompone
 
 		SpritesheetSettings spriteSettings = emitterSettings.Spritesheet;
 		ParticleShader.SetUniform("uSpriteColor", spriteSettings.SpriteColor);
-		float startFrame = spriteSettings.IsRandomStartFrame ? RandomRange(0.0f, spriteSettings.SubImages.X * spriteSettings.SubImages.Y) : spriteSettings.StartFrame;
+		float startFrame = spriteSettings.IsRandomStartFrame
+			? RandomRange(0.0f, spriteSettings.SubImages.X * spriteSettings.SubImages.Y)
+			: spriteSettings.StartFrame;
 		ParticleShader.SetUniform("uSpriteStartFrame", startFrame);
 		ParticleShader.SetUniform("uSpriteSpeed", spriteSettings.Speed);
 		ParticleShader.SetUniform("uSpriteSubImages", spriteSettings.SubImages.X, spriteSettings.SubImages.Y);
 
 		GLsizei partileLen = (GLsizei)(particleCmp->GetEmitter()->GetInstancesCount());
-		const TextureResource* texture = particleCmp->GetEmitter()->GetSpritesheet();
-		const GLParticleDeviceProxy* particleProxy = static_cast<const GLParticleDeviceProxy*>(particleCmp->GetEmitter()->GetParticleProxy());
-		GLuint particleVAO = particleProxy->GetVAO();
+		const ITextureDeviceProxy* texture = particleCmp->GetEmitter()->GetSpritesheet()->GetTextureProxy();
+		GLuint textureID = texture
+			? (GLuint)(texture->GetResourceID())
+			: RDI->FallbackWhiteTexture;
 
-		GLuint textureID = texture == nullptr
-			? RDI->FallbackWhiteTexture
-			: (GLuint)(texture->GetTextureProxy()->GetResourceID());
+		ParticleShader.SetUniform("uHasSprite", texture ? 1.0f : 0.0f);
 
-		ParticleShader.SetUniform("uHasSprite", texture == nullptr ? 0.0f : 1.0f);
+		// glActiveTexture(GL_TEXTURE0);
+		// glBindTexture(GL_TEXTURE_2D, textureID);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureID);
+		ParticleShader.BindSampler("uSpriteMap", 0, textureID);
 
-		glBindVertexArray(particleVAO);
+		glBindVertexArray((GLuint)(particleCmp->GetEmitter()->GetParticleProxy()->GetResourceID()));
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, partileLen);
 		glBindVertexArray(0);
 		// CHECK_GL_ERR();
@@ -1354,7 +1361,8 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	float gamma = 2.2f;
 
 	const PostprocessSettingsComponent* postCmp = sceneView.CameraCmp->GetSibling<PostprocessSettingsComponent>();
-	if (postCmp) {
+	if (postCmp)
+	{
 		grainScale		= postCmp->GrainScale;
 		vignetteScale	= postCmp->VignetteScale;
 		abberationScale	= postCmp->AbberationScale;
@@ -1365,9 +1373,9 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	}
 
 	GammaShader.BindProgram();
-	GammaShader.BindSampler("uImage", 0, PostColorBuffer1);
-	GammaShader.BindSampler("uDepth", 1, LinearDepth);
-	GammaShader.BindSampler("uSplashImage", 2, Splash->GetTextureProxy()->GetResourceID());
+	GammaShader.BindSampler("uImage",		0, PostColorBuffer1);
+	GammaShader.BindSampler("uDepth",		1, LinearDepth);
+	GammaShader.BindSampler("uSplashImage",	2, Splash->GetTextureProxy()->GetResourceID());
 	GammaShader.SetUniform("uSplashTint", Color(1.0f, 0.0f, 0.0f, 1.0f) * 0.8f);
 	GammaShader.SetUniform("uTime", time);
 	GammaShader.SetUniform("uRes", Vector(viewportWidth, viewportHeight, 1.0f / viewportWidth, 1.0f / viewportHeight));

@@ -49,7 +49,7 @@ void ParticleUpdateSystem::EmitterEmit(Scene* world, ParticleEmitter* emitter, P
 		p->Age = 0.0f;
 		p->LifeTime = 1.0f;
 
-		emitter->settings.ParticleInitFunc(p);
+		emitter->settings.ParticleInitFunc(p, amount - 1);
 
 		--amount;
 	}

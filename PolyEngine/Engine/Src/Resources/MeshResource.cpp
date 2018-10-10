@@ -55,10 +55,11 @@ MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMaterial* mat
 	
 	MeshData.EmissiveMap			= LoadTexture(material, path, (unsigned int)aiTextureType_EMISSIVE,		eTextureUsageType::EMISSIVE);
 	MeshData.AlbedoMap				= LoadTexture(material, path, (unsigned int)aiTextureType_DIFFUSE,		eTextureUsageType::ALBEDO);
-	MeshData.MetallicMap			= LoadTexture(material, path, (unsigned int)aiTextureType_SPECULAR,		eTextureUsageType::METALLIC);
-	MeshData.RoughnessMap			= LoadTexture(material, path, (unsigned int)aiTextureType_SHININESS,	eTextureUsageType::ROUGHNESS);
+//	MeshData.AmbientOcclusionMap	= LoadTexture(material, path, (unsigned int)aiTextureType_AMBIENT,		eTextureUsageType::AMBIENT_OCCLUSION);
+//	MeshData.MetallicMap			= LoadTexture(material, path, (unsigned int)aiTextureType_SPECULAR,		eTextureUsageType::METALLIC);
+//	MeshData.RoughnessMap			= LoadTexture(material, path, (unsigned int)aiTextureType_SHININESS,	eTextureUsageType::ROUGHNESS);
+	MeshData.ORMMap					= LoadTexture(material, path, (unsigned int)aiTextureType_SPECULAR,		eTextureUsageType::ORM);
 	MeshData.NormalMap				= LoadTexture(material, path, (unsigned int)aiTextureType_HEIGHT,		eTextureUsageType::NORMAL);
-	MeshData.AmbientOcclusionMap	= LoadTexture(material, path, (unsigned int)aiTextureType_AMBIENT,		eTextureUsageType::AMBIENT_OCCLUSION);
 }
 
 void MeshResource::SubMesh::LoadBones(aiMesh* mesh)
@@ -169,15 +170,18 @@ TextureResource* MeshResource::SubMesh::LoadTexture(const aiMaterial* material, 
 		// end temporary code for extracting path
 
 		texture = ResourceManager<TextureResource>::Load(textPath, eResourceSource::NONE, textureType);
-		if (!texture) {
-			gConsole.LogError("Failed to load texture: {}", textPath);
-		}
-		else {
+		if (texture)
+		{
 			gConsole.LogDebug("Succeded to load texture: {}", textPath);
 		}
+		else
+		{
+			gConsole.LogError("Failed to load texture: {}", textPath);
+		}
 	}
-	else {
-		gConsole.LogError("Failed to load texture for material: {}", path);
+	else
+	{
+		gConsole.LogError("Failed to load texture (usage: {}) for material: {}", (int)textureType, path);
 	}
 
 	return texture;

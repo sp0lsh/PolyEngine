@@ -19,7 +19,7 @@ namespace Poly
 
 	ENGINE_DLLEXPORT float* LoadImageHDR(const String& path, int* width, int* height, int* fileChannels);
 	ENGINE_DLLEXPORT void FreeImageHDR(float* data);
-	ENGINE_DLLEXPORT unsigned char* LoadImage(const String& path, int* width, int* height, int* fileChannels, int desiredChannels = 0);
+	ENGINE_DLLEXPORT unsigned char* LoadImage(const String& path, int* width, int* height, int* fileChannels);
 	ENGINE_DLLEXPORT void FreeImage(unsigned char* data);
 
 

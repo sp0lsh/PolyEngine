@@ -53,8 +53,7 @@ void ParticlesRenderingPass::OnRun(Scene* world, const CameraComponent* camera, 
 
 		GLsizei partileLen = (GLsizei)(particleCmp->GetEmitter()->GetInstancesCount());
 		const TextureResource* Texture = particleCmp->GetEmitter()->GetSpritesheet();
-		const GLParticleDeviceProxy* particleProxy = static_cast<const GLParticleDeviceProxy*>(particleCmp->GetEmitter()->GetParticleProxy());
-		GLuint particleVAO = particleProxy->GetVAO();
+		GLuint particleVAO = (GLuint)(particleCmp->GetEmitter()->GetParticleProxy()->GetResourceID());
 
 		GLuint TextureID = Texture == nullptr
 			? RDI->FallbackWhiteTexture

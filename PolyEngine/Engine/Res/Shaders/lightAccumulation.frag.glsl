@@ -64,10 +64,8 @@ uniform sampler2D uDirShadowMap;
 
 uniform sampler2D uEmissiveMap;
 uniform sampler2D uAlbedoMap;
-uniform sampler2D uRoughnessMap;
-uniform sampler2D uMetallicMap;
+uniform sampler2D uORMMap;
 uniform sampler2D uNormalMap;
-uniform sampler2D uAmbientOcclusionMap;
 
 
 uniform float uTime;
@@ -170,10 +168,13 @@ void main()
 
 	vec4 emissive = uMaterial.Emissive * texture(uEmissiveMap, fragment_in.uv);
 	vec4 albedo = uMaterial.Albedo * texture(uAlbedoMap, fragment_in.uv);
-	float roughness = uMaterial.Roughness * texture(uRoughnessMap, fragment_in.uv).r;
-	float metallic = uMaterial.Metallic * texture(uMetallicMap, fragment_in.uv).r;
+	
+	vec3 orm = texture(uORMMap, fragment_in.uv).rgb;
+	float ao = orm.r;	
+	float roughness = uMaterial.Roughness * orm.g;
+	float metallic = uMaterial.Metallic * orm.b;
+
 	vec3 normal = normalize(texture(uNormalMap, fragment_in.uv).rgb * 2.0 - 1.0);
-	float ao = texture(uAmbientOcclusionMap, fragment_in.uv).r;
 
     albedo = clamp(albedo, vec4(0.0), vec4(1.0));
     roughness = clamp(roughness, 0.0, 1.0);
@@ -311,7 +312,7 @@ void main()
     vec3 specular = prefilteredColor * (amF * envBRDF.x + envBRDF.y);
     
 	vec3 ambient = (amkD * diffuse + specular) * ao;
-    oColor.rgb = ambient + emissive.rgb + Lo;
+    oColor.rgb = ambient + emissive.rgb + Lo;	
 
 	oNormal.rgb = (WorldFromTangent * normal) * 0.5 + 0.5;
 }

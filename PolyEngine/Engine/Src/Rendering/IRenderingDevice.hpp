@@ -29,6 +29,7 @@ namespace Poly
 		METALLIC,
 		ROUGHNESS,
 		AMBIENT_OCCLUSION,
+		ORM,
 		EMISSIVE,
 		NORMAL,
 		FONT,
@@ -111,6 +112,7 @@ namespace Poly
 	{
 	public:
 		virtual void SetContent(const ParticleEmitter& particles) = 0;
+		virtual unsigned int GetResourceID() const = 0;
 	};
 
 	//------------------------------------------------------------------------------

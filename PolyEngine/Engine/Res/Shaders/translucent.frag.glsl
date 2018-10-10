@@ -36,10 +36,8 @@ uniform samplerCube uPrefilterMap;
 
 uniform sampler2D uEmissiveMap;
 uniform sampler2D uAlbedoMap;
-uniform sampler2D uRoughnessMap;
-uniform sampler2D uMetallicMap;
+uniform sampler2D uORMMap;
 uniform sampler2D uNormalMap;
-uniform sampler2D uAmbientOcclusionMap;
 
 uniform Material uMaterial;
 
@@ -100,10 +98,12 @@ void main()
 {
     vec4 emissive = uMaterial.Emissive * texture(uEmissiveMap, fragment_in.uv);
     vec4 albedo = uMaterial.Albedo * texture(uAlbedoMap, fragment_in.uv);
-    float roughness = uMaterial.Roughness * texture(uRoughnessMap, fragment_in.uv).r;
-    float metallic = uMaterial.Metallic * texture(uMetallicMap, fragment_in.uv).r;
-    vec3 normal = normalize(texture(uNormalMap, fragment_in.uv).rgb * 2.0 - 1.0);
-    float ao = texture(uAmbientOcclusionMap, fragment_in.uv).r;
+	vec3 orm = texture(uORMMap, fragment_in.uv).rgb;
+	float ao = orm.r;
+	float metallic = uMaterial.Metallic * orm.g;
+	float roughness = uMaterial.Roughness * orm.b;
+	
+	vec3 normal = normalize(texture(uNormalMap, fragment_in.uv).rgb * 2.0 - 1.0);
 
     // if (albedo.a < uMaterial.OpacityMaskThreshold)
     // {

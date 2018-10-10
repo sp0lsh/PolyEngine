@@ -69,18 +69,19 @@ void Poly::FreeImageHDR(float* data)
 	stbi_image_free(data);
 }
 
-unsigned char* Poly::LoadImage(const String& path, int* width, int* height, int* fileChannels, int desiredChannels)
+unsigned char* Poly::LoadImage(const String& path, int* width, int* height, int* fileChannels)
 {
 	if (stbi_is_hdr(path.GetCStr()))
 	{
-		gConsole.LogWarning("Poly::LoadImageHDR HDR file spotted, scalling to LDR and gamma change may appear!");
+		gConsole.LogWarning("Poly::LoadImage HDR file spotted, scalling to LDR and gamma change may appear!");
 	}
 
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load(path.GetCStr(), width, height, fileChannels, desiredChannels);
+	unsigned char *data = stbi_load(path.GetCStr(), width, height, fileChannels, 0);
+	gConsole.LogInfo("Poly::LoadImage path: {}, Channels: {}, desired channels: {}", path, *fileChannels);
 	if (!data)
 	{
-	 gConsole.LogInfo("Poly::LoadImage Failed to load: {}, reason: {}", path, stbi_failure_reason());
+		gConsole.LogInfo("Poly::LoadImage Failed to load: {}, reason: {}", path, stbi_failure_reason());
 	}
 	
 	return data;

@@ -18,15 +18,17 @@ namespace Poly
 		GLParticleDeviceProxy();
 		virtual ~GLParticleDeviceProxy();
 
-		void SetContent(const ParticleEmitter& particles);
-
-		GLuint GetVAO() const { return VAO; }
+		// Inherited via IParticleDeviceProxy
+		virtual void SetContent(const ParticleEmitter& particles) override;
+		virtual unsigned int GetResourceID() const override;
+		
+		// GLuint GetVAO() const { return VAO; }
 
 	private:
 
 		GLuint VAO = 0;
 		GLuint VBO = 0;
-		unsigned int instanceVBO;
+		unsigned int instanceVBO = 0;
 
 		Dynarray<float> InstancesTransform;
 	};

@@ -115,9 +115,7 @@ void GLTextureDeviceProxy::InitTextureParams()
 {
 	ASSERTE(Width > 0 && Height > 0, "Invalid arguments!");
 	if (TextureID > 0)
-	{
 		return;
-	}
 
 	// gConsole.LogInfo("GLTextureDeviceProxy::InitTextureParams usage: {}", (int)Usage);
 
@@ -130,6 +128,7 @@ void GLTextureDeviceProxy::InitTextureParams()
 		case eTextureUsageType::AMBIENT_OCCLUSION:
 		case eTextureUsageType::METALLIC:
 		case eTextureUsageType::ROUGHNESS:
+		case eTextureUsageType::ORM:
 			InitTextureLinear();
 			break;
 		case eTextureUsageType::NORMAL:

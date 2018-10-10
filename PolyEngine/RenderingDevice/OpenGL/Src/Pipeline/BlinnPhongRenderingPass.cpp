@@ -173,7 +173,7 @@ void BlinnPhongRenderingPass::OnRun(Scene* world, const CameraComponent* camera,
 			glBindTexture(GL_TEXTURE_2D, TextureID);
 			GetProgram().SetUniform("uDiffuseTexture", 0);
 
-			const Poly::TextureResource* SpecularMap = subMesh->GetMeshData().GetRoughnessMap();
+			const Poly::TextureResource* SpecularMap = subMesh->GetMeshData().GetORMMap();
 			GLuint SpecularMapID = SpecularMap == nullptr
 				? RDI->FallbackWhiteTexture
 				: static_cast<const GLTextureDeviceProxy*>(SpecularMap->GetTextureProxy())->GetTextureID();

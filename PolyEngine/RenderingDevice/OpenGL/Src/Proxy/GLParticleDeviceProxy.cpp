@@ -6,7 +6,6 @@
 
 using namespace Poly;
 
-//---------------------------------------------------------------
 GLParticleDeviceProxy::GLParticleDeviceProxy()
 {
 	// quad with uv mapping
@@ -63,7 +62,6 @@ GLParticleDeviceProxy::GLParticleDeviceProxy()
 	CHECK_GL_ERR();
 }
 
-//---------------------------------------------------------------
 GLParticleDeviceProxy::~GLParticleDeviceProxy()
 {
 	if (VBO)
@@ -100,4 +98,9 @@ void GLParticleDeviceProxy::SetContent(const ParticleEmitter& emitter)
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * InstancesTransform.GetSize(), InstancesTransform.GetData(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+unsigned int GLParticleDeviceProxy::GetResourceID() const
+{
+	return VAO;
 }
