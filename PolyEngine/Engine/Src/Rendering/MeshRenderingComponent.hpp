@@ -38,6 +38,11 @@ namespace Poly {
 		float Roughness;
 		float Metallic;
 		float OpacityMaskThreshold;
+
+		TextureResource* EmissiveTexture = nullptr;
+		TextureResource* AlbedoTexture = nullptr;
+		TextureResource* RoughnessTexture = nullptr;
+		TextureResource* MetallicTexture = nullptr;
 	};
 
 	class ENGINE_DLLEXPORT MeshRenderingComponent : public ComponentBase

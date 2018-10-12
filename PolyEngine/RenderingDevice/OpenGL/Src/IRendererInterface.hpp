@@ -15,6 +15,7 @@ namespace Poly {
 	class AARect;
 	class CameraComponent;
 	class MeshRenderingComponent;
+	class OrthoMeshRenderingComponent;
 
 	struct SceneView : public BaseObject<> {
 		SceneView(Scene* w, Viewport& v)
@@ -29,6 +30,7 @@ namespace Poly {
 		Dynarray<const MeshRenderingComponent*> DirShadowOpaqueQueue;
 		Dynarray<const MeshRenderingComponent*> OpaqueQueue;
 		Dynarray<const MeshRenderingComponent*> TranslucentQueue;
+		Dynarray<const OrthoMeshRenderingComponent*> OrthoQueue;
 
 		Dynarray<const DirectionalLightComponent*> DirectionalLights;
 		Dynarray<const PointLightComponent*> PointLights;

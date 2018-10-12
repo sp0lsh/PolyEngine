@@ -129,6 +129,7 @@ namespace Poly {
 		GLShaderProgram BloomApplyShader;
 		GLShaderProgram ParticleShader;
 		GLShaderProgram TranslucentShader;
+		GLShaderProgram OrthoMeshShader;
 		GLShaderProgram EquiToCubemapShader;
 		GLShaderProgram IntegrateBRDFShader;
 		GLShaderProgram Text2DShader;
@@ -171,6 +172,8 @@ namespace Poly {
 		void RenderTranslucentLit(const SceneView& sceneView);
 		
 		void RenderParticleUnlit(Scene* world, const CameraComponent* cameraCmp);
+
+		void RenderOrthoMeshes(const SceneView& sceneView);
 
 		void LinearizeDepth(const SceneView& sceneView);
 

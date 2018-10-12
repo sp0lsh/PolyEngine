@@ -61,6 +61,7 @@
 #include <Rendering/Particles/ParticleEmitter.hpp>
 #include <Rendering/Lighting/LightSourceComponent.hpp>
 #include <Rendering/MeshRenderingComponent.hpp>
+#include <Rendering/OrthoMeshRenderingComponent.hpp>
 #include <Rendering/SkyboxWorldComponent.hpp>
 #include <Rendering/PostprocessSettingsComponent.hpp>
 #include <Rendering/SpritesheetComponent.hpp>

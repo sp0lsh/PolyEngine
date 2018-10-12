@@ -60,6 +60,7 @@ TiledForwardRenderer::TiledForwardRenderer(GLRenderingDevice* rdi)
 	BloomApplyShader("Shaders/hdr.vert.glsl", "Shaders/bloom_pass_apply.frag.glsl"),
 	ParticleShader("Shaders/instanced.vert.glsl", "Shaders/instanced.frag.glsl"),
 	TranslucentShader("Shaders/translucent.vert.glsl", "Shaders/translucent.frag.glsl"),
+	OrthoMeshShader("Shaders/orthoMesh.vert.glsl", "Shaders/orthoMesh.frag.glsl"),
 	EquiToCubemapShader("Shaders/equiHdr.vert.glsl", "Shaders/equiHdr.frag.glsl"),
 	IntegrateBRDFShader("Shaders/hdr.vert.glsl", "Shaders/integrateBRDF.frag.glsl"),
 	Text2DShader("Shaders/text2D.vert.glsl", "Shaders/text2D.frag.glsl"),
@@ -558,6 +559,8 @@ void TiledForwardRenderer::Render(const SceneView& sceneView)
 	PostBloom(sceneView);
 	
 	PostTonemapper(sceneView);
+	
+	RenderOrthoMeshes(sceneView);
 	
 	PostFXAA(sceneView);
 	 
@@ -1321,6 +1324,58 @@ void TiledForwardRenderer::PostTonemapper(const SceneView& sceneView)
 	glBindVertexArray(RDI->PrimitivesQuad->VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void TiledForwardRenderer::RenderOrthoMeshes(const SceneView& sceneView)
+{
+	gConsole.LogInfo("TiledForwardRenderer::RenderOrthoMeshes size: {}", sceneView.OrthoQueue.GetSize());
+
+	const ScreenSize screenSize = RDI->GetScreenSize();
+	GLsizei viewportWidth = (GLsizei)(sceneView.Rect.GetSize().X * screenSize.Width);
+	GLsizei viewportHeight = (GLsizei)(sceneView.Rect.GetSize().Y * screenSize.Height);
+	
+	glViewport(0, 0, viewportWidth, viewportHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost0);
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
+
+	OrthoMeshShader.BindProgram();
+
+	for (const OrthoMeshRenderingComponent* meshCmp : sceneView.OrthoQueue)
+	{	
+		const Matrix& clipFromModel = meshCmp->GetTransform().GetWorldFromModel();
+		OrthoMeshShader.SetUniform("uClipFromModel", clipFromModel);
+
+		size_t counter = 0;
+		for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
+		{
+			Material material = meshCmp->GetMaterial(counter);
+			GLuint textureID = RDI->FallbackWhiteTexture;
+	
+			const TextureResource* textureRes = material.AlbedoTexture;
+			if (textureRes) 
+			{
+				const ITextureDeviceProxy* texture = textureRes->GetTextureProxy();
+				if (texture)
+					GLuint textureID = (GLuint)(texture->GetResourceID());
+			}
+			
+			OrthoMeshShader.BindSampler("uAlbedoTexture", 0, textureID);
+			OrthoMeshShader.SetUniform("uAlbedoColor", material.Albedo);
+
+			glBindVertexArray(subMesh->GetMeshProxy()->GetResourceID());
+
+			glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetMeshData().GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindVertexArray(0);
+
+			counter++;
+		}
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

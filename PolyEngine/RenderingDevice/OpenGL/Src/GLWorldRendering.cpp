@@ -90,6 +90,13 @@ void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 		}
 	}
 
+	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<OrthoMeshRenderingComponent>())
+	{
+		const OrthoMeshRenderingComponent* meshCmp = std::get<OrthoMeshRenderingComponent*>(componentsTuple);
+
+		sceneView.OrthoQueue.PushBack(meshCmp);
+	}
+
 	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<DirectionalLightComponent>())
 	{
 		sceneView.DirectionalLights.PushBack(std::get<DirectionalLightComponent*>(componentsTuple));
