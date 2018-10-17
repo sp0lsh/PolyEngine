@@ -69,7 +69,7 @@ void GLRenderingDevice::RenderWorld(Scene* world)
 
 void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 {
-	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<MeshRenderingComponent>())
+	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<MeshRenderingComponent>())
 	{
 		const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
 
@@ -90,19 +90,22 @@ void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 		}
 	}
 
-	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<OrthoMeshRenderingComponent>())
+	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<OrthoMeshRenderingComponent>())
 	{
-		const OrthoMeshRenderingComponent* meshCmp = std::get<OrthoMeshRenderingComponent*>(componentsTuple);
-
-		sceneView.OrthoQueue.PushBack(meshCmp);
+		sceneView.OrthoQueue.PushBack(std::get<OrthoMeshRenderingComponent*>(componentsTuple));
 	}
 
-	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<DirectionalLightComponent>())
+	for (const auto [particleCmp] : sceneView.SceneData->IterateComponents<ParticleComponent>())
+	{
+		sceneView.ParticleQueue.Push(particleCmp);
+	}
+
+	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<DirectionalLightComponent>())
 	{
 		sceneView.DirectionalLights.PushBack(std::get<DirectionalLightComponent*>(componentsTuple));
 	}
 
-	for (const auto componentsTuple : sceneView.WorldData->IterateComponents<PointLightComponent>())
+	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<PointLightComponent>())
 	{
 		sceneView.PointLights.PushBack(std::get<PointLightComponent*>(componentsTuple));
 	}
