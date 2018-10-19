@@ -77,22 +77,23 @@ void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 		{
 			if (meshCmp->GetBlendingMode() == eBlendingMode::OPAUQE)
 			{
-				sceneView.OpaqueQueue.PushBack(meshCmp);
+				sceneView.OpaqueQueue.Push(meshCmp);
 			}
 			else if (meshCmp->GetBlendingMode() == eBlendingMode::TRANSLUCENT)
 			{
-				sceneView.TranslucentQueue.PushBack(meshCmp);
+				sceneView.TranslucentQueue.Push(meshCmp);
 			}
 		}
-		else
+
+		if (meshCmp->GetBlendingMode() == eBlendingMode::OPAUQE)
 		{
-			sceneView.DirShadowOpaqueQueue.PushBack(meshCmp);
+			sceneView.DirShadowOpaqueList.PushBack(meshCmp);
 		}
 	}
 
 	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<OrthoMeshRenderingComponent>())
 	{
-		sceneView.OrthoQueue.PushBack(std::get<OrthoMeshRenderingComponent*>(componentsTuple));
+		sceneView.OrthoList.PushBack(std::get<OrthoMeshRenderingComponent*>(componentsTuple));
 	}
 
 	for (const auto [particleCmp] : sceneView.SceneData->IterateComponents<ParticleComponent>())
@@ -107,7 +108,7 @@ void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 
 	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<PointLightComponent>())
 	{
-		sceneView.PointLights.PushBack(std::get<PointLightComponent*>(componentsTuple));
+		sceneView.PointLightList.PushBack(std::get<PointLightComponent*>(componentsTuple));
 	}
 }
 

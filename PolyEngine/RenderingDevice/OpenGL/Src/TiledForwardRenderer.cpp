@@ -648,22 +648,7 @@ void TiledForwardRenderer::RenderShadowMap(const SceneView& sceneView)
 	
 	ShadowMapShader.BindProgram();
 
-	for (const MeshRenderingComponent* meshCmp : sceneView.OpaqueQueue)
-	{
-		const Matrix& worldFromModel = meshCmp->GetTransform().GetWorldFromModel();
-		ShadowMapShader.SetUniform("uClipFromModel", projDirLightFromWorld * worldFromModel);
-
-		for (const MeshResource::SubMesh* subMesh : meshCmp->GetMesh()->GetSubMeshes())
-		{			
-			glBindVertexArray(subMesh->GetMeshProxy()->GetResourceID());
-
-			glDrawElements(GL_TRIANGLES, (GLsizei)subMesh->GetMeshData().GetTriangleCount() * 3, GL_UNSIGNED_INT, NULL);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glBindVertexArray(0);
-		}
-	}
-
-	for (const MeshRenderingComponent* meshCmp : sceneView.DirShadowOpaqueQueue)
+	for (const MeshRenderingComponent* meshCmp : sceneView.DirShadowOpaqueList)
 	{
 		const Matrix& worldFromModel = meshCmp->GetTransform().GetWorldFromModel();
 		ShadowMapShader.SetUniform("uClipFromModel", projDirLightFromWorld * worldFromModel);
@@ -700,8 +685,11 @@ void TiledForwardRenderer::RenderDepthPrePass(const SceneView& sceneView)
 
 	const Matrix& clipFromWorld = sceneView.CameraCmp->GetClipFromWorld();
 	
-	for (const MeshRenderingComponent* meshCmp : sceneView.OpaqueQueue)
+	// for (const MeshRenderingComponent* meshCmp : sceneView.OpaqueQueue)
+	PriorityQueue<const MeshRenderingComponent*, SceneView::DistanceToCameraComparator> drawOpaqueQueue(sceneView.OpaqueQueue);
+	while(drawOpaqueQueue.GetSize() > 0)
 	{
+		const MeshRenderingComponent* meshCmp = drawOpaqueQueue.Pop();
 		const Matrix& worldFromModel = meshCmp->GetTransform().GetWorldFromModel();
 		DepthShader.SetUniform("uScreenFromModel", clipFromWorld * worldFromModel);
 		
@@ -739,7 +727,7 @@ void TiledForwardRenderer::ComputeLightCulling(const SceneView& sceneView)
 	LightCullingShader.SetUniform("uScreenSizeY", viewportHeight);
 	LightCullingShader.SetUniform("uWorkGroupsX", (int)WorkGroupsX);
 	LightCullingShader.SetUniform("uWorkGroupsY", (int)WorkGroupsY);
-	LightCullingShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLights.GetSize(), MAX_NUM_LIGHTS));
+	LightCullingShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLightList.GetSize(), MAX_NUM_LIGHTS));
 
 	// Bind depth map texture to texture location 4 (which will not be used by any model texture)
 	glActiveTexture(GL_TEXTURE0);
@@ -788,7 +776,7 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 	const EntityTransform& cameraTransform = sceneView.CameraCmp->GetTransform();
 
 	LightAccumulationShader.SetUniform("uTime", time);
-	LightAccumulationShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLights.GetSize(), MAX_NUM_LIGHTS));
+	LightAccumulationShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLightList.GetSize(), MAX_NUM_LIGHTS));
 	LightAccumulationShader.SetUniform("uWorkGroupsX", (int)WorkGroupsX);
 	LightAccumulationShader.SetUniform("uWorkGroupsY", (int)WorkGroupsY);
 	LightAccumulationShader.SetUniform("uViewPosition", cameraTransform.GetGlobalTranslation());
@@ -820,8 +808,11 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 	glBindFragDataLocation((GLuint)LightAccumulationShader.GetProgramHandle(), 1, "oNormal");
 
 	const Matrix& clipFromWorld = sceneView.CameraCmp->GetClipFromWorld();
-	for (const MeshRenderingComponent* meshCmp : sceneView.OpaqueQueue)
+	// for (const MeshRenderingComponent* meshCmp : sceneView.OpaqueQueue)
+	PriorityQueue<const MeshRenderingComponent*, SceneView::DistanceToCameraComparator> drawOpaqueQueue(sceneView.OpaqueQueue);
+	while (drawOpaqueQueue.GetSize() > 0)
 	{
+		const MeshRenderingComponent* meshCmp = drawOpaqueQueue.Pop();
 		const EntityTransform& transform = meshCmp->GetTransform();
 		const Matrix& worldFromModel = transform.GetWorldFromModel();
 		LightAccumulationShader.SetUniform("uClipFromModel", clipFromWorld * worldFromModel);
@@ -947,7 +938,7 @@ void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
 
 	const EntityTransform& cameraTransform = sceneView.CameraCmp->GetTransform();
 	TranslucentShader.BindProgram();
-	TranslucentShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLights.GetSize(), MAX_NUM_LIGHTS));
+	TranslucentShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLightList.GetSize(), MAX_NUM_LIGHTS));
 	TranslucentShader.SetUniform("uWorkGroupsX", (int)WorkGroupsX);
 	TranslucentShader.SetUniform("uWorkGroupsY", (int)WorkGroupsY);
 	TranslucentShader.SetUniform("uViewPosition", cameraTransform.GetGlobalTranslation());
@@ -976,8 +967,12 @@ void TiledForwardRenderer::RenderTranslucentLit(const SceneView& sceneView)
 	glBindFragDataLocation((GLuint)TranslucentShader.GetProgramHandle(), 1, "oNormal");
 
 	const Matrix& clipFromWorld = sceneView.CameraCmp->GetClipFromWorld();
-	for (const MeshRenderingComponent* meshCmp : sceneView.TranslucentQueue)
+	// for (const MeshRenderingComponent* meshCmp : sceneView.TranslucentQueue)
+	// {
+	PriorityQueue<const MeshRenderingComponent*, SceneView::DistanceToCameraComparator> drawTranslucentQueue(sceneView.TranslucentQueue);
+	while (drawTranslucentQueue.GetSize() > 0)
 	{
+		const MeshRenderingComponent* meshCmp = drawTranslucentQueue.Pop();
 		const EntityTransform& transform = meshCmp->GetTransform();
 		const Matrix& worldFromModel = transform.GetWorldFromModel();
 		TranslucentShader.SetUniform("uClipFromModel", clipFromWorld * worldFromModel);
@@ -1334,7 +1329,7 @@ void TiledForwardRenderer::PostTonemapper(const SceneView& sceneView)
 
 void TiledForwardRenderer::RenderOrthoMeshes(const SceneView& sceneView)
 {
-	gConsole.LogInfo("TiledForwardRenderer::RenderOrthoMeshes size: {}", sceneView.OrthoQueue.GetSize());
+	gConsole.LogInfo("TiledForwardRenderer::RenderOrthoMeshes size: {}", sceneView.OrthoList.GetSize());
 
 	const ScreenSize screenSize = RDI->GetScreenSize();
 	GLsizei viewportWidth = (GLsizei)(sceneView.Rect.GetSize().X * screenSize.Width);
@@ -1349,7 +1344,7 @@ void TiledForwardRenderer::RenderOrthoMeshes(const SceneView& sceneView)
 
 	OrthoMeshShader.BindProgram();
 
-	for (const OrthoMeshRenderingComponent* meshCmp : sceneView.OrthoQueue)
+	for (const OrthoMeshRenderingComponent* meshCmp : sceneView.OrthoList)
 	{	
 		const Matrix& clipFromModel = meshCmp->GetTransform().GetWorldFromModel();
 		OrthoMeshShader.SetUniform("uClipFromModel", clipFromModel);
@@ -1579,7 +1574,7 @@ void TiledForwardRenderer::UpdateLightsBufferFromScene(const SceneView& sceneVie
 	Dynarray<Vector> rangeIntensity;
 
 	int lightCounter = 0;
-	for (const PointLightComponent* pointLightCmp : sceneView.PointLights)
+	for (const PointLightComponent* pointLightCmp : sceneView.PointLightList)
 	{
 		const EntityTransform& transform = pointLightCmp->GetTransform();
 
@@ -1647,7 +1642,7 @@ void TiledForwardRenderer::DebugLightAccum(const SceneView& sceneView)
 	DebugLightAccumShader.SetUniform("uTime", time);
 	DebugLightAccumShader.SetUniform("uWorkGroupsX", (int)WorkGroupsX);
 	DebugLightAccumShader.SetUniform("uWorkGroupsY", (int)WorkGroupsY);
-	DebugLightAccumShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLights.GetSize(), MAX_NUM_LIGHTS));
+	DebugLightAccumShader.SetUniform("uLightCount", (int)std::min((int)sceneView.PointLightList.GetSize(), MAX_NUM_LIGHTS));
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, LightBuffer);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, VisibleLightIndicesBuffer);
