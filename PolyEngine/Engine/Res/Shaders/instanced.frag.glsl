@@ -1,6 +1,10 @@
 #version 330 core
 
 uniform sampler2D uSpriteMap;
+uniform sampler2D uLinearDepth;
+uniform vec4 uScreenSize;
+uniform float uNear;
+uniform float uFar;
 uniform float uTime;
 uniform float uHasSprite;
 uniform vec4 uEmitterAlbedo;
@@ -9,12 +13,17 @@ uniform float uSpriteSpeed;
 uniform float uSpriteStartFrame;
 uniform vec2 uSpriteSubImages;
 uniform vec4 uSpriteColor;
+uniform float uSpriteDepthFade;
 
 in vec2 vTexCoord;
 in float vInstanceID;
 
 layout(location = 0) out vec4 color;
 layout(location = 1) out vec4 normal;
+
+float LinearizeDepth(float depth) {
+	return -uFar * uNear / (depth * (uFar - uNear) - uFar);
+}
 
 vec2 SubUV(vec2 uv, vec2 subImages, float frame)
 {
@@ -43,7 +52,14 @@ void main()
 	tex *= uSpriteColor;
 
     color = mix(vec4(mask), tex, uHasSprite) * uEmitterAlbedo + uEmitterEmissive;
-    color.rgb *= color.a;
-		
+
+	vec2 screenUV = gl_FragCoord.xy * uScreenSize.zw;
+	float sceneDepth = texture(uLinearDepth, screenUV).g;
+	float pixelDepth = LinearizeDepth(gl_FragCoord.z);
+	float depthFade = clamp((sceneDepth - pixelDepth) / uSpriteDepthFade, 0.0, 1.0);	
+	color.a *= depthFade;
+	
+	color.rgb *= color.a;
+	
 	normal = vec4(0.0);
 }

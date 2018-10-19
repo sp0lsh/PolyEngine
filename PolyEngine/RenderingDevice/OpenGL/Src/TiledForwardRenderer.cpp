@@ -1048,17 +1048,20 @@ void TiledForwardRenderer::RenderParticleUnlit(const SceneView& sceneView)
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
 
+	const ScreenSize screenSize = RDI->GetScreenSize();
+
 	ParticleShader.BindProgram();
 	ParticleShader.SetUniform("uTime", time);
+	ParticleShader.SetUniform("uScreenSize", Vector((float)screenSize.Width, (float)screenSize.Height, 1.0f / screenSize.Width, 1.0f / screenSize.Height));
+	ParticleShader.SetUniform("uNear", sceneView.CameraCmp->GetClippingPlaneNear());
+	ParticleShader.SetUniform("uFar", sceneView.CameraCmp->GetClippingPlaneFar());
 	ParticleShader.SetUniform("uScreenFromView", screenFromView);
 
 	glBindFragDataLocation((GLuint)TranslucentShader.GetProgramHandle(), 0, "color");
 	glBindFragDataLocation((GLuint)TranslucentShader.GetProgramHandle(), 1, "normal");
 
-	PriorityQueue<const ParticleComponent*, SceneView::TranslucentComparator> drawParticleQueue(sceneView.ParticleQueue);
-
-	size_t particlesSize = drawParticleQueue.GetSize();
-	for (size_t i = 0; i < particlesSize; ++i)
+	PriorityQueue<const ParticleComponent*, SceneView::DistanceToCameraComparator> drawParticleQueue(sceneView.ParticleQueue);
+	while (drawParticleQueue.GetSize() > 0)
 	{
 		const ParticleComponent* particleCmp = drawParticleQueue.Pop();
 		const EntityTransform& transform = particleCmp->GetTransform();
@@ -1076,6 +1079,7 @@ void TiledForwardRenderer::RenderParticleUnlit(const SceneView& sceneView)
 
 		SpritesheetSettings spriteSettings = emitterSettings.Spritesheet;
 		ParticleShader.SetUniform("uSpriteColor", spriteSettings.SpriteColor);
+		ParticleShader.SetUniform("uSpriteDepthFade", spriteSettings.SpriteDepthFade);
 		float startFrame = spriteSettings.IsRandomStartFrame
 			? RandomRange(0.0f, spriteSettings.SubImages.X * spriteSettings.SubImages.Y)
 			: spriteSettings.StartFrame;
@@ -1095,6 +1099,7 @@ void TiledForwardRenderer::RenderParticleUnlit(const SceneView& sceneView)
 		// glBindTexture(GL_TEXTURE_2D, textureID);
 
 		ParticleShader.BindSampler("uSpriteMap", 0, textureID);
+		ParticleShader.BindSampler("uLinearDepth", 1, LinearDepth);
 
 		glBindVertexArray((GLuint)(particleCmp->GetEmitter()->GetParticleProxy()->GetResourceID()));
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, partileLen);
