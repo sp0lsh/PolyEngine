@@ -1334,7 +1334,7 @@ void TiledForwardRenderer::PostTonemapper(const SceneView& sceneView)
 
 void TiledForwardRenderer::RenderOrthoMeshes(const SceneView& sceneView)
 {
-	gConsole.LogInfo("TiledForwardRenderer::RenderOrthoMeshes size: {}", sceneView.OrthoList.GetSize());
+	// gConsole.LogInfo("TiledForwardRenderer::RenderOrthoMeshes size: {}", sceneView.OrthoList.GetSize());
 
 	const ScreenSize screenSize = RDI->GetScreenSize();
 	GLsizei viewportWidth = (GLsizei)(sceneView.Rect.GetSize().X * screenSize.Width);
