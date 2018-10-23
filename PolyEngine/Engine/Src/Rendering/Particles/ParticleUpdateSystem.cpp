@@ -25,10 +25,10 @@ void ParticleUpdateSystem::EmitterEmit(Scene* world, ParticleEmitter* emitter, P
 	size_t size = emitter->ToEmit;
 	emitter->ToEmit = 0;
 	size_t sizeLeft = emitter->ParticlesPool.GetFreeBlockCount();
-	if (size > sizeLeft)
-	{
-		gConsole.LogInfo("ParticleEmitter::Emit not enough memory in room (1000)");
-	}
+	// if (size > sizeLeft)
+	// {
+	// 	gConsole.LogInfo("ParticleEmitter::Emit not enough memory in room (1000)");
+	// }
 
 	size_t amount = Clamp(size, (size_t)0, sizeLeft);
 
