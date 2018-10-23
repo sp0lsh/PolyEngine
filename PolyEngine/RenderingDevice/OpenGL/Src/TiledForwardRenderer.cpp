@@ -622,16 +622,26 @@ void TiledForwardRenderer::RenderEquiCube(const SceneView& sceneView)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-Matrix TiledForwardRenderer::GetProjectionForShadowMap(const DirectionalLightComponent* dirLightCmp) const
+Matrix TiledForwardRenderer::GetProjectionForShadowMap(const DirectionalLightComponent* dirLightCmp, const CameraComponent* camCmp) const
 {
 	// TODO: calc bounding box and then determine projection size
 	// make sure contains all the objects
-	float near_plane = -4096.0f, far_plane = 4096.0f;
+	float near_plane = -4000.0f, far_plane = 4000.0f;
 	Matrix dirLightProjection;
-	dirLightProjection.SetOrthographic(-4096.0f, 4096.0f, -4096.0f, 4096.0f, near_plane, far_plane);
+	dirLightProjection.SetOrthographic(
+		-2000.0f,
+		 2000.0f,
+		-2000.0f,
+		 2000.0f, 
+		 near_plane,
+		 far_plane
+	);
 	
 	Matrix dirLightFromWorld = dirLightCmp->GetTransform().GetWorldFromModel().GetInversed();
-	return dirLightFromWorld * dirLightProjection;
+	Matrix translation;
+	translation.SetTranslation(-camCmp->GetTransform().GetGlobalTranslation());
+
+	return dirLightProjection * dirLightFromWorld * translation;
 }
 
 void TiledForwardRenderer::RenderShadowMap(const SceneView& sceneView)
@@ -644,7 +654,7 @@ void TiledForwardRenderer::RenderShadowMap(const SceneView& sceneView)
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOShadowDepthMap);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
-	Matrix projDirLightFromWorld = GetProjectionForShadowMap(sceneView.DirectionalLights[0]);
+	Matrix projDirLightFromWorld = GetProjectionForShadowMap(sceneView.DirectionalLights[0], sceneView.CameraCmp);
 	
 	ShadowMapShader.BindProgram();
 
@@ -768,7 +778,7 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 
 	LightAccumulationShader.BindProgram();
 
-	Matrix projDirLightFromWorld = sceneView.DirectionalLights.IsEmpty() ? Matrix() : GetProjectionForShadowMap(sceneView.DirectionalLights[0]);
+	Matrix projDirLightFromWorld = sceneView.DirectionalLights.IsEmpty() ? Matrix() : GetProjectionForShadowMap(sceneView.DirectionalLights[0], sceneView.CameraCmp);
 
 	LightAccumulationShader.SetUniform("uDirLightFromWorld", projDirLightFromWorld);
 	LightAccumulationShader.BindSampler("uDirShadowMap", 9, DirShadowMap);
@@ -837,7 +847,7 @@ void TiledForwardRenderer::RenderOpaqueLit(const SceneView& sceneView)
 			const TextureResource* normalMap	= subMesh->GetMeshData().GetNormalMap();
 
 			// Material textures
-			LightAccumulationShader.BindSampler("uEmissiveMap",	3, emissiveMap	? emissiveMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackWhiteTexture);
+			LightAccumulationShader.BindSampler("uEmissiveMap",	3, emissiveMap	? emissiveMap->GetTextureProxy()->GetResourceID()	: RDI->FallbackBlackTexture);
 			LightAccumulationShader.BindSampler("uAlbedoMap",	4, albedoMap	? albedoMap->GetTextureProxy()->GetResourceID()		: RDI->FallbackWhiteTexture);
 			// LightAccumulationShader.BindSampler("uRoughnessMap",		5, roughnessMap			? roughnessMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);
 			// LightAccumulationShader.BindSampler("uMetallicMap",			6, metallicMap			? metallicMap->GetTextureProxy()->GetResourceID()			: RDI->FallbackWhiteTexture);

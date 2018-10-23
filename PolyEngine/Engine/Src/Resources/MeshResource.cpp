@@ -53,7 +53,7 @@ MeshResource::SubMesh::SubMesh(const String& path, aiMesh* mesh, aiMaterial* mat
 	LoadGeometry(mesh);
 	LoadBones(mesh);
 	
-	MeshData.EmissiveMap			= LoadTexture(material, path, (unsigned int)aiTextureType_EMISSIVE,		eTextureUsageType::EMISSIVE);
+	MeshData.EmissiveMap			= LoadTexture(material, path, (unsigned int)aiTextureType_SHININESS,		eTextureUsageType::EMISSIVE);
 	MeshData.AlbedoMap				= LoadTexture(material, path, (unsigned int)aiTextureType_DIFFUSE,		eTextureUsageType::ALBEDO);
 //	MeshData.AmbientOcclusionMap	= LoadTexture(material, path, (unsigned int)aiTextureType_AMBIENT,		eTextureUsageType::AMBIENT_OCCLUSION);
 //	MeshData.MetallicMap			= LoadTexture(material, path, (unsigned int)aiTextureType_SPECULAR,		eTextureUsageType::METALLIC);
