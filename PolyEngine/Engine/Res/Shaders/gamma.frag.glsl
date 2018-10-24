@@ -141,7 +141,7 @@ vec3 ca(sampler2D t, vec2 UV, vec4 sampl, float scale)
 
 void main()
 {
-    vec2 p = 1. - 2. * vUV;
+    vec2 p = 1. - 2. * (gl_FragCoord.xy * uRes.zw);
     p.y *= uRes.y / uRes.x;
 
     vec2 splashUV = vUV;
@@ -172,7 +172,7 @@ void main()
     // result.rgb = vec3(splash.a);
     result = mix(result.rgb, uSplashTint.rgb, splash.r * maskX * maskY);
 
-    vec3 blended = result.rgb * ColorTemperatureToRGB(12500.0);
+    vec3 blended = result.rgb * ColorTemperatureToRGB(uTemperature);
     vec3 resultHSL = RGBtoHSL(blended);
     float originalLuminance = Luminance(result.rgb);
     vec3 luminancePreservedRGB = HSLtoRGB(vec3(resultHSL.x, resultHSL.y, originalLuminance));

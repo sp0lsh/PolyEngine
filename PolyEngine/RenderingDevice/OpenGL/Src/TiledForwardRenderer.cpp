@@ -1430,6 +1430,7 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	Color fogColor = Color::WHITE;
 	float fogDensity = 0.66f;
 	float gamma = 2.2f;
+	float temperature = 6500.0f;
 
 	const PostprocessSettingsComponent* postCmp = sceneView.CameraCmp->GetSibling<PostprocessSettingsComponent>();
 	if (postCmp)
@@ -1438,6 +1439,7 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 		vignetteScale	= postCmp->VignetteScale;
 		abberationScale	= postCmp->AbberationScale;
 		tint			= postCmp->Tint;
+		temperature		= postCmp->Temperature;
 		fogColor		= postCmp->FogColor;
 		fogDensity		= postCmp->FogDensity;
 		gamma			= postCmp->Gamma;
@@ -1458,6 +1460,8 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	GammaShader.SetUniform("uGrainScale", grainScale);
 	GammaShader.SetUniform("uVignetteScale", vignetteScale);
 	GammaShader.SetUniform("uAbberationScale", abberationScale);
+	GammaShader.SetUniform("uAbberationScale", abberationScale);
+	GammaShader.SetUniform("uTemperature", temperature);
 	GammaShader.SetUniform("uGamma", gamma);
 
 	glViewport(
