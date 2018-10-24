@@ -1448,7 +1448,7 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	GammaShader.BindSampler("uDepth",		1, LinearDepth);
 	GammaShader.BindSampler("uSplashImage",	2, Splash->GetTextureProxy()->GetResourceID());
 	GammaShader.SetUniform("uShowSplash", showSplash);
-	GammaShader.SetUniform("uSplashTint", Color(1.0f, 0.0f, 0.0f, 1.0f) * 0.8f);
+	GammaShader.SetUniform("uSplashTint", Color::WHITE * 0.8f);
 	GammaShader.SetUniform("uTime", time);
 	GammaShader.SetUniform("uRes", Vector(viewportWidth, viewportHeight, 1.0f / viewportWidth, 1.0f / viewportHeight));
 	GammaShader.SetUniform("uTint", tint);
