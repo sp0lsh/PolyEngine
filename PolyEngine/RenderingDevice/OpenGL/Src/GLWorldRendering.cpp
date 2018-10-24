@@ -69,7 +69,7 @@ void GLRenderingDevice::RenderWorld(Scene* world)
 
 void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 {
-	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<MeshRenderingComponent>())
+	for (const auto& componentsTuple : sceneView.SceneData->IterateComponents<MeshRenderingComponent>())
 	{
 		const MeshRenderingComponent* meshCmp = std::get<MeshRenderingComponent*>(componentsTuple);
 
@@ -86,27 +86,26 @@ void GLRenderingDevice::FillSceneView(SceneView& sceneView)
 		}
 
 		if (meshCmp->GetBlendingMode() == eBlendingMode::OPAUQE)
-		{
 			sceneView.DirShadowOpaqueList.PushBack(meshCmp);
-		}
 	}
 
-	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<OrthoMeshRenderingComponent>())
+	for (const auto& [orthoCmp] : sceneView.SceneData->IterateComponents<OrthoMeshRenderingComponent>())
 	{
-		sceneView.OrthoList.PushBack(std::get<OrthoMeshRenderingComponent*>(componentsTuple));
+		if (orthoCmp->GetBlendingMode() == eBlendingMode::OPAUQE)
+			sceneView.OrthoList.PushBack(orthoCmp);
 	}
 
-	for (const auto [particleCmp] : sceneView.SceneData->IterateComponents<ParticleComponent>())
+	for (const auto& [particleCmp] : sceneView.SceneData->IterateComponents<ParticleComponent>())
 	{
 		sceneView.ParticleQueue.Push(particleCmp);
 	}
 
-	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<DirectionalLightComponent>())
+	for (const auto& componentsTuple : sceneView.SceneData->IterateComponents<DirectionalLightComponent>())
 	{
 		sceneView.DirectionalLights.PushBack(std::get<DirectionalLightComponent*>(componentsTuple));
 	}
 
-	for (const auto componentsTuple : sceneView.SceneData->IterateComponents<PointLightComponent>())
+	for (const auto& componentsTuple : sceneView.SceneData->IterateComponents<PointLightComponent>())
 	{
 		sceneView.PointLightList.PushBack(std::get<PointLightComponent*>(componentsTuple));
 	}

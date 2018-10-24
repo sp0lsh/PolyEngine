@@ -7,6 +7,7 @@ uniform sampler2D uImage;
 uniform sampler2D uDepth;
 uniform sampler2D uSplashImage;
 uniform vec4 uSplashTint;
+uniform float uShowSplash;
 uniform float uTime;
 uniform vec4 uRes;
 uniform vec4 uTint;
@@ -167,15 +168,16 @@ void main()
     float noise = uGrainScale * .012 * vec3(hash(length(p) * uTime)).x;
     color = mix(color, color * vignette, uVignetteScale) + noise;
 
-    vec3 result = pow(color.rgb * uTint.rgb, vec3(1.0 / uGamma));
-
-    // result.rgb = vec3(splash.a);
-    result = mix(result.rgb, uSplashTint.rgb, splash.r * maskX * maskY);
-
-    vec3 blended = result.rgb * ColorTemperatureToRGB(uTemperature);
+	color = mix( color.rgb, mix( color.rgb, uSplashTint.rgb, splash.r * maskX * maskY), step(0.5, uShowSplash));
+   
+    vec3 blended = color.rgb * ColorTemperatureToRGB(uTemperature);
     vec3 resultHSL = RGBtoHSL(blended);
-    float originalLuminance = Luminance(result.rgb);
+    float originalLuminance = Luminance(color.rgb);
     vec3 luminancePreservedRGB = HSLtoRGB(vec3(resultHSL.x, resultHSL.y, originalLuminance));
 	
-    oColor = vec4(luminancePreservedRGB, 1.0);
+	luminancePreservedRGB *= uTint.rgb;
+		
+	vec3 result = pow(luminancePreservedRGB.rgb, vec3(1.0 / uGamma));
+	
+    oColor = vec4(result, 1.0);
 }

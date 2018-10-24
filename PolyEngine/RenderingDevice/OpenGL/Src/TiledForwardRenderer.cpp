@@ -1354,10 +1354,6 @@ void TiledForwardRenderer::RenderOrthoMeshes(const SceneView& sceneView)
 	
 	glViewport(0, 0, viewportWidth, viewportHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOpost0);
-	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendEquation(GL_FUNC_ADD);
 
 	OrthoMeshShader.BindProgram();
 
@@ -1431,6 +1427,7 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 	float fogDensity = 0.66f;
 	float gamma = 2.2f;
 	float temperature = 6500.0f;
+	float showSplash = 1.0f;
 
 	const PostprocessSettingsComponent* postCmp = sceneView.CameraCmp->GetSibling<PostprocessSettingsComponent>();
 	if (postCmp)
@@ -1443,12 +1440,14 @@ void TiledForwardRenderer::PostGamma(const SceneView& sceneView)
 		fogColor		= postCmp->FogColor;
 		fogDensity		= postCmp->FogDensity;
 		gamma			= postCmp->Gamma;
+		showSplash		= postCmp->ShowSplash;
 	}
 
 	GammaShader.BindProgram();
 	GammaShader.BindSampler("uImage",		0, PostColorBuffer1);
 	GammaShader.BindSampler("uDepth",		1, LinearDepth);
 	GammaShader.BindSampler("uSplashImage",	2, Splash->GetTextureProxy()->GetResourceID());
+	GammaShader.SetUniform("uShowSplash", showSplash);
 	GammaShader.SetUniform("uSplashTint", Color(1.0f, 0.0f, 0.0f, 1.0f) * 0.8f);
 	GammaShader.SetUniform("uTime", time);
 	GammaShader.SetUniform("uRes", Vector(viewportWidth, viewportHeight, 1.0f / viewportWidth, 1.0f / viewportHeight));

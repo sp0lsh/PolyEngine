@@ -35,6 +35,8 @@ namespace Poly {
 		Color Tint = Color::WHITE;
 		float Temperature = 6500.0f;
 		float Gamma = 2.2f;
+
+		float ShowSplash = 1.0f;
 	};
 
 	REGISTER_COMPONENT(ComponentsIDGroup, PostprocessSettingsComponent)
