@@ -11,6 +11,7 @@
 #include <Proxy/GLParticleDeviceProxy.hpp>
 #include <Proxy/GLTextFieldBufferDeviceProxy.hpp>
 #include <Proxy/GLMeshDeviceProxy.hpp>
+#include <Proxy/GLShaderDeviceProxy.hpp>
 
 #include <Pipeline/UnlitRenderingPass.hpp>
 #include <Pipeline/BlinnPhongRenderingPass.hpp>
@@ -94,13 +95,11 @@ GLRenderingDevice::~GLRenderingDevice()
 	gRenderingDevice = nullptr;
 }
 
-
 void GLRenderingDevice::EndFrame()
 {
 	if(Window && Context)
 		SDL_GL_SwapWindow(Window);
 }
-
 
 void GLRenderingDevice::Resize(const ScreenSize& size)
 {
@@ -136,13 +135,11 @@ void GLRenderingDevice::GetExtensions()
 	}
 }
 
-
 template<typename T>
 inline void GLRenderingDevice::RegisterGeometryPass(eGeometryRenderPassType type, const std::initializer_list<InputOutputBind>& inputs, const std::initializer_list<InputOutputBind>& outputs)
 {
 	RegisterGeometryPassWithArgs<T>(type, inputs, outputs);
 }
-
 
 template<typename T, class... Args_t>
 inline void GLRenderingDevice::RegisterGeometryPassWithArgs(eGeometryRenderPassType type, const std::initializer_list<InputOutputBind>& inputs, const std::initializer_list<InputOutputBind>& outputs, Args_t&&... args)
@@ -158,7 +155,6 @@ inline void GLRenderingDevice::RegisterGeometryPassWithArgs(eGeometryRenderPassT
 	GeometryRenderingPasses[type]->Finalize();
 }
 
-
 template<typename T, typename... Args>
 T* Poly::GLRenderingDevice::CreateRenderingTarget(eRenderTargetId type, Args&&... args)
 {
@@ -166,7 +162,6 @@ T* Poly::GLRenderingDevice::CreateRenderingTarget(eRenderTargetId type, Args&&..
 	RenderingTargets[type].reset(target);
 	return target;
 }
-
 
 void Poly::GLRenderingDevice::RegisterPostprocessPass(ePostprocessRenderPassType type, const String& fragShaderName, const std::initializer_list<InputOutputBind>& inputs, const std::initializer_list<InputOutputBind>& outputs)
 {
@@ -180,7 +175,6 @@ void Poly::GLRenderingDevice::RegisterPostprocessPass(ePostprocessRenderPassType
 
 	PostprocessRenderingPasses[type]->Finalize();
 }
-
 
 void Poly::GLRenderingDevice::CleanUpResources()
 {
@@ -197,7 +191,6 @@ void Poly::GLRenderingDevice::CleanUpResources()
 	PrimitivesCube.reset();
 }
 
-
 std::unique_ptr<ITextureDeviceProxy> GLRenderingDevice::CreateTexture(size_t width, size_t height, size_t channels, eTextureUsageType usage)
 {
 	return std::make_unique<GLTextureDeviceProxy>(width, height, channels, usage);
@@ -208,12 +201,10 @@ std::unique_ptr<ICubemapDeviceProxy> Poly::GLRenderingDevice::CreateCubemap(size
 	return std::make_unique<GLCubemapDeviceProxy>(width, height);
 }
 
-
 std::unique_ptr<ITextFieldBufferDeviceProxy> GLRenderingDevice::CreateTextFieldBuffer()
 {
 	return std::make_unique<GLTextFieldBufferDeviceProxy>();
 }
-
 
 std::unique_ptr<IMeshDeviceProxy> GLRenderingDevice::CreateMesh()
 {
@@ -223,4 +214,9 @@ std::unique_ptr<IMeshDeviceProxy> GLRenderingDevice::CreateMesh()
 std::unique_ptr<IParticleDeviceProxy> GLRenderingDevice::CreateParticle()
 {
 	return std::make_unique<GLParticleDeviceProxy>();
+}
+
+std::unique_ptr<IShaderDeviceProxy> GLRenderingDevice::CreateShader()
+{
+	return std::make_unique<GLShaderDeviceProxy>();
 }

@@ -3,7 +3,9 @@
 #include <Defines.hpp>
 #include <ECS/ComponentBase.hpp>
 #include <Rendering/RenderingSystem.hpp>
+#include <Resources/ResourceManager.hpp>
 #include <Resources/MeshResource.hpp>
+#include <Resources/ShaderResource.hpp>
 
 namespace Poly {
 
@@ -12,14 +14,6 @@ namespace Poly {
 		NONE,
 		UNLIT,
 		PBR,
-		_COUNT
-	};
-
-	enum class eBlendingMode
-	{
-		NONE,
-		OPAUQE,
-		TRANSLUCENT,
 		_COUNT
 	};
 
@@ -50,20 +44,27 @@ namespace Poly {
 
 		const MeshResource* GetMesh() const { return Mesh; }
 		const Material& GetMaterial(int i) const { return Materials[i]; }
+		const ShaderResource* GetShaderResource(int i) const { return ShaderResources[i]; }
 		bool GetIsWireframe() const { return IsWireframe; }
 		eShadingMode GetShadingModel() const { return ShadingMode; }
 		eBlendingMode GetBlendingMode() const { return BlendingMode; }
 		
 		void SetMaterial(size_t i, const Material& value) { Materials[i] = value; }
+		void SetShaderResource(size_t i, ShaderResource* value)
+		{
+			if (value->GetShaderProxy()->GetResourceID() == 0)
+				value->Compile();
+			ShaderResources[i] = value;
+		}
 		void SetIsWireframe(bool value) { IsWireframe = value; }
 		void SetShadingModel(eShadingMode value) { ShadingMode = value; }
 		void SetBlendingMode(eBlendingMode value) { BlendingMode = value; }
-
 
 		Optional<AABox> GetBoundingBox(eEntityBoundingChannel channel) override;
 	private:
 		MeshResource* Mesh = nullptr;
 		Dynarray<Material> Materials;
+		Dynarray<ShaderResource*> ShaderResources;
 		eShadingMode ShadingMode = eShadingMode::PBR;
 		eBlendingMode BlendingMode = eBlendingMode::OPAUQE;
 		bool IsWireframe = false;

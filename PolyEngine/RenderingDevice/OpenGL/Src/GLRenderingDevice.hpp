@@ -88,6 +88,7 @@ namespace Poly
 		std::unique_ptr<ITextFieldBufferDeviceProxy> CreateTextFieldBuffer() override;
 		std::unique_ptr<IMeshDeviceProxy> CreateMesh() override;
 		std::unique_ptr<IParticleDeviceProxy> CreateParticle() override;
+		std::unique_ptr<IShaderDeviceProxy> CreateShader() override;
 
 		std::unique_ptr<PrimitiveQuad> PrimitivesQuad;
 		std::unique_ptr<PrimitiveCube> PrimitivesCube;

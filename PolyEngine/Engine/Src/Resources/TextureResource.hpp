@@ -3,8 +3,6 @@
 #include <Defines.hpp>
 #include <Resources/ResourceBase.hpp>
 
-typedef unsigned int GLuint;
-
 namespace Poly 
 {
 	class ITextureDeviceProxy;
@@ -29,4 +27,3 @@ namespace Poly
 		int Channels = 0;
 	};
 }
-

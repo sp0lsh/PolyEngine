@@ -17,6 +17,7 @@ DEFINE_RESOURCE(MeshResource, gMeshResourcesMap)
 DEFINE_RESOURCE(TextureResource, gTextureResourcesMap)
 DEFINE_RESOURCE(FontResource, gFontResourcesMap)
 DEFINE_RESOURCE(SoundResource, gALSoundResourcesMap)
+DEFINE_RESOURCE(ShaderResource, gShaderResourcesMap)
 
 String Poly::EvaluateFullResourcePath(eResourceSource Source, const String& path)
 {

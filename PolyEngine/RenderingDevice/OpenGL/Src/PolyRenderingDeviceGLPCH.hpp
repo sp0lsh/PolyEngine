@@ -77,6 +77,7 @@
 #include <Debugging/DebugDrawComponents.hpp>
 
 // Resources 
+#include <Resources/ShaderResource.hpp>
 #include <Resources/TextureResource.hpp>
 #include <Resources/ResourceManager.hpp>
 

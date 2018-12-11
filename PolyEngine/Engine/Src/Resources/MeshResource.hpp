@@ -12,8 +12,6 @@ struct aiMesh;
 struct aiMaterial;
 struct aiAnimation;
 
-typedef unsigned int GLuint;
- 
 namespace Poly
 {
 	class ENGINE_DLLEXPORT MeshResource : public ResourceBase

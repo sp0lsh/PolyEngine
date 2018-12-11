@@ -11,6 +11,7 @@ namespace Poly
 	class TextureResource;
 	class FontResource;
 	class SoundResource;
+	class ShaderResource;
 
 	ENGINE_DLLEXPORT String EvaluateFullResourcePath(eResourceSource Source, const String& path);
 
@@ -49,6 +50,7 @@ namespace Poly
 	ENGINE_DECLARE_RESOURCE(TextureResource, gTextureResourcesMap)
 	ENGINE_DECLARE_RESOURCE(FontResource, gFontResourcesMap)
 	ENGINE_DECLARE_RESOURCE(SoundResource, gALSoundResourcesMap)
+	ENGINE_DECLARE_RESOURCE(ShaderResource, gShaderResourcesMap)
 
 	template<typename T>
 	class ResourceManager

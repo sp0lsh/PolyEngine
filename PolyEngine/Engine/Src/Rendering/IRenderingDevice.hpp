@@ -113,6 +113,13 @@ namespace Poly
 		virtual void SetContent(const ParticleEmitter& particles) = 0;
 	};
 
+	class ENGINE_DLLEXPORT IShaderDeviceProxy : public BaseObject<>
+	{
+	public:
+		virtual void Compile() = 0;
+		virtual unsigned int GetResourceID() const = 0;
+	};
+
 	//------------------------------------------------------------------------------
 	class ENGINE_DLLEXPORT IRenderingDevice : public BaseObject<>
 	{
@@ -128,6 +135,7 @@ namespace Poly
 		virtual std::unique_ptr<ITextFieldBufferDeviceProxy> CreateTextFieldBuffer() = 0;
 		virtual std::unique_ptr<IMeshDeviceProxy> CreateMesh() = 0;
 		virtual std::unique_ptr<IParticleDeviceProxy> CreateParticle() = 0;
+		virtual std::unique_ptr<IShaderDeviceProxy> CreateShader() = 0;
 	protected:
 	};
 }
