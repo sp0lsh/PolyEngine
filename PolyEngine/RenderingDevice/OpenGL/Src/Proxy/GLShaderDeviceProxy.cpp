@@ -1,3 +1,5 @@
+#include "GLShaderDeviceProxy.hpp"
+#include "GLShaderDeviceProxy.hpp"
 #include <PolyRenderingDeviceGLPCH.hpp>
 
 #include <Proxy/GLShaderDeviceProxy.hpp>
@@ -13,6 +15,7 @@ GLShaderDeviceProxy::~GLShaderDeviceProxy()
 {
 }
 
-void GLShaderDeviceProxy::SetContent()
+void GLShaderDeviceProxy::Compile(MaterialAsset& materialAsset)
 {
+
 }

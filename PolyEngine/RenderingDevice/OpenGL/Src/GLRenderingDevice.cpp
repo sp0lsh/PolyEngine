@@ -220,3 +220,8 @@ std::unique_ptr<IShaderDeviceProxy> GLRenderingDevice::CreateShader()
 {
 	return std::make_unique<GLShaderDeviceProxy>();
 }
+
+std::unique_ptr<GLShaderProgram> GLRenderingDevice::CreateShaderProgram()
+{
+	return std::make_unique<GLShaderProgram>(ShaderCompiler);
+}

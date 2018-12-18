@@ -3,6 +3,7 @@
 #include <Resources/ResourceManager.hpp>
 #include <Resources/MeshResource.hpp>
 #include <Resources/SoundResource.hpp>
+#include <Resources/ShaderResource.hpp>
 
 SILENCE_CLANG_WARNING(-Wparentheses-equality, "Surpressing clang warnings in stb_image") //@fixme(celeborth) if put in PCH it throws violation of ODR linker error
 SILENCE_GCC_WARNING(-Wimplicit-fallthrough=, "Surpressing clang warnings in stb_image")
@@ -17,7 +18,12 @@ DEFINE_RESOURCE(MeshResource, gMeshResourcesMap)
 DEFINE_RESOURCE(TextureResource, gTextureResourcesMap)
 DEFINE_RESOURCE(FontResource, gFontResourcesMap)
 DEFINE_RESOURCE(SoundResource, gALSoundResourcesMap)
-DEFINE_RESOURCE(ShaderResource, gShaderResourcesMap)
+// DEFINE_RESOURCE(ShaderResource, gShaderResourcesMap)
+namespace Poly { 
+	namespace Impl { 
+		std::map<String, std::unique_ptr<ShaderResource>> gShaderResourcesMap = {};
+	}
+}
 
 String Poly::EvaluateFullResourcePath(eResourceSource Source, const String& path)
 {

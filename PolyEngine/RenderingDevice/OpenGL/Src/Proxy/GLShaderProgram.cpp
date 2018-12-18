@@ -11,7 +11,7 @@ using namespace Poly;
 
 const String SHADERS_INCLUDE_DIR = "Shaders/";
 
-GLShaderProgram::GLShaderProgram(const String& compute)
+void GLShaderProgram::Compile(const String& compute)
 {
 	gConsole.LogDebug("Creating shader program {}", compute);
 	ProgramHandle = glCreateProgram();
@@ -28,7 +28,7 @@ GLShaderProgram::GLShaderProgram(const String& compute)
 		AnalyzeShaderCode(type);
 }
 
-GLShaderProgram::GLShaderProgram(const String& vertex, const String& fragment)
+void GLShaderProgram::Compile(const String& vertex, const String& fragment)
 {
 	gConsole.LogDebug("Creating shader program {} {}", vertex, fragment);
 	ProgramHandle = glCreateProgram();
@@ -49,7 +49,7 @@ GLShaderProgram::GLShaderProgram(const String& vertex, const String& fragment)
 		AnalyzeShaderCode(type);
 }
 
-GLShaderProgram::GLShaderProgram(const String& vertex, const String& geometry, const String& fragment)
+void GLShaderProgram::Compile(const String& vertex, const String& geometry, const String& fragment)
 {
 	gConsole.LogDebug("Creating shader program {} {} {}", vertex, geometry, fragment);
 	ProgramHandle = glCreateProgram();
@@ -69,7 +69,7 @@ GLShaderProgram::GLShaderProgram(const String& vertex, const String& geometry, c
 	CompileProgram();
 
 	for(eShaderUnitType type : IterateEnum<eShaderUnitType>())
-			AnalyzeShaderCode(type);
+		AnalyzeShaderCode(type);
 }
 
 void GLShaderProgram::BindProgram() const
@@ -146,6 +146,10 @@ void GLShaderProgram::LoadShader(eShaderUnitType type, const String& shaderName)
 	}
 
 	ShaderCode[type] = sb.GetString();
+
+	String compiledPath = EvaluateFullResourcePath(eResourceSource::ENGINE, shaderName + String(".dump"));
+	gConsole.LogInfo("GLShaderProgram::LoadShader debugPath: {}", compiledPath);
+	SaveTextFileRelative(eResourceSource::ENGINE, shaderName + String(".dump"), ShaderCode[type]);
 }
 
 void GLShaderProgram::CompileShader(GLShaderProgram::eShaderUnitType type)
@@ -205,6 +209,7 @@ unsigned int GLShaderProgram::GetProgramHandle() const
 
 void GLShaderProgram::RegisterUniform(const String& type, const String& name)
 {
+	// TODO: do with regex
 	if (Uniforms.find(name) != Uniforms.end())
 		return;
 

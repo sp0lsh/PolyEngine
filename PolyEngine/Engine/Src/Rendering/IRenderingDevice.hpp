@@ -7,6 +7,7 @@ namespace Poly
 {
 	class Scene;
 	class ParticleEmitter;
+	class MaterialAsset;
 
 	struct ScreenSize
 	{
@@ -116,7 +117,7 @@ namespace Poly
 	class ENGINE_DLLEXPORT IShaderDeviceProxy : public BaseObject<>
 	{
 	public:
-		virtual void Compile() = 0;
+		virtual void Compile(MaterialAsset& materialAsset) = 0;
 		virtual unsigned int GetResourceID() const = 0;
 	};
 

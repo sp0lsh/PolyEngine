@@ -6,12 +6,15 @@
 
 using namespace Poly;
 
+RTTI_DEFINE_TYPE(Poly::MaterialAsset)
+
 ShaderResource::ShaderResource(const String& absolutePath)
 {
 	gConsole.LogInfo("ShaderResource::ShaderResource: path {}", absolutePath);
-	// DefaultMaterial.DeserializeFromFile(absolutePath);
+	Material.DeserializeFromFile(absolutePath);
 	
 	ShaderProxy = gEngine->GetRenderingDevice()->CreateShader();
+	ShaderProxy->Compile(Material);
 }
 
 ShaderResource::~ShaderResource()
@@ -20,5 +23,5 @@ ShaderResource::~ShaderResource()
 
 void ShaderResource::Compile()
 {
-	ShaderProxy->Compile();
+	ShaderProxy->Compile(Material);
 }

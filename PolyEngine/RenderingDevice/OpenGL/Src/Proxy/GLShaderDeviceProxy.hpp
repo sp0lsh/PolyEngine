@@ -2,16 +2,16 @@
 
 #include <Defines.hpp>
 #include <Common/GLUtils.hpp>
+#include <Resources/ShaderResource.hpp>
 
 namespace Poly
 {
 	class GLShaderDeviceProxy : public IShaderDeviceProxy
 	{
-	public:
+	public: // Inherited via IShaderDeviceProxy
 		GLShaderDeviceProxy();
 		virtual ~GLShaderDeviceProxy();
-		
-		void SetContent() override;
+		virtual void Compile(MaterialAsset& materialAsset) override;
 		unsigned int GetResourceID() const override { return 0; };
 	};
 }

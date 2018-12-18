@@ -12,8 +12,9 @@ RTTI_DEFINE_COMPONENT(::Poly::MeshRenderingComponent)
 MeshRenderingComponent::MeshRenderingComponent(const String& meshPath, eResourceSource source)
 {
 	Mesh = ResourceManager<MeshResource>::Load(meshPath, source);
-
-	if (Mesh) {
+	
+	if (Mesh)
+	{
 		size_t materialsNum = GetMesh()->GetSubMeshes().GetSize();
 		ShaderResources.Resize(materialsNum);
 		Materials.Resize(materialsNum);
@@ -36,7 +37,7 @@ Poly::MeshRenderingComponent::~MeshRenderingComponent()
 	}
 }
 
-Optional<AABox> Poly::MeshRenderingComponent::GetBoundingBox(eEntityBoundingChannel channel)
+Optional<AABox> Poly::MeshRenderingComponent::GetBoundingBox(eEntityBoundingChannel channel) const
 {
 	if (channel != eEntityBoundingChannel::RENDERING || !Mesh)
 		return {};

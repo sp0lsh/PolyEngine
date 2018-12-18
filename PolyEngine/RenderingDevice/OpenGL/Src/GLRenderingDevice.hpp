@@ -2,14 +2,14 @@
 
 #include <Defines.hpp>
 #include <Common/GLUtils.hpp>
-#include <Proxy/GLShaderProgram.hpp>
+#include <Common/PrimitiveQuad.hpp>
+#include <Common/PrimitiveCube.hpp>
+// #include <Proxy/GLShaderProgram.hpp>
 
 struct SDL_Window;
 
 namespace Poly
 {
-	struct PrimitiveQuad;
-	struct PrimitiveCube;
 	struct SceneView;
 	class CameraComponent;
 	class AARect;
@@ -17,6 +17,13 @@ namespace Poly
 	class RenderingPassBase;
 	class RenderingTargetBase;
 	class IRendererInterface;
+	class GLShaderProgram;
+
+	class DEVICE_DLLEXPORT GLShaderCompiler : public BaseObject<>
+	{
+		public:
+			uint Compile();
+	};
 
 	class DEVICE_DLLEXPORT GLRenderingDevice : public IRenderingDevice
 	{
@@ -89,6 +96,7 @@ namespace Poly
 		std::unique_ptr<IMeshDeviceProxy> CreateMesh() override;
 		std::unique_ptr<IParticleDeviceProxy> CreateParticle() override;
 		std::unique_ptr<IShaderDeviceProxy> CreateShader() override;
+		std::unique_ptr<GLShaderProgram> CreateShaderProgram();
 
 		std::unique_ptr<PrimitiveQuad> PrimitivesQuad;
 		std::unique_ptr<PrimitiveCube> PrimitivesCube;
@@ -104,6 +112,8 @@ namespace Poly
 		void CreateUtilityTextures();
 
 		void FillSceneView(SceneView& sceneView);
+		void CullDirLightQueue(SceneView& sceneView, const Dynarray<MeshRenderingComponent*>& meshCmp);
+		void CullShadowCasters(SceneView& sceneView, const Matrix& dirLightFromWorld, const Matrix& worldFromDirLight, AABox& frustumAABBInLS);
 		void EndFrame();
 
 		void CleanUpResources();
@@ -129,6 +139,8 @@ namespace Poly
 		SDL_GLContext Context;
 		ScreenSize ScreenDim;
 		Dynarray<String> OpenGLExtensions;
+
+		GLShaderCompiler ShaderCompiler;
 
 		eRendererType RendererType;
 		IRendererInterface* Renderer;

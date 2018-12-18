@@ -50,7 +50,15 @@ namespace Poly
 	ENGINE_DECLARE_RESOURCE(TextureResource, gTextureResourcesMap)
 	ENGINE_DECLARE_RESOURCE(FontResource, gFontResourcesMap)
 	ENGINE_DECLARE_RESOURCE(SoundResource, gALSoundResourcesMap)
-	ENGINE_DECLARE_RESOURCE(ShaderResource, gShaderResourcesMap)
+	// ENGINE_DECLARE_RESOURCE(ShaderResource, gShaderResourcesMap)
+	// #define ENGINE_DECLARE_RESOURCE(type, map_name)
+	namespace Impl {
+		ENGINE_DLLEXPORT extern std::map<String, std::unique_ptr<ShaderResource>> gShaderResourcesMap;
+		template<>
+		inline std::map<String, std::unique_ptr<ShaderResource>>& GetResources<ShaderResource>() {
+			return gShaderResourcesMap;
+		}
+	}
 
 	template<typename T>
 	class ResourceManager

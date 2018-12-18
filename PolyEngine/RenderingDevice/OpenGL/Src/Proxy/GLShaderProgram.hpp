@@ -7,6 +7,8 @@ typedef unsigned int GLenum;
 
 namespace Poly
 {
+	class GLShaderCompiler;
+
 	class GLShaderProgram : public BaseObject<>
 	{
 		enum class eShaderUnitType
@@ -37,9 +39,13 @@ namespace Poly
 		};
 
 	public:
-		GLShaderProgram(const String& compute);
-		GLShaderProgram(const String& vertex, const String& fragment);
-		GLShaderProgram(const String& vertex, const String& geometry, const String& fragment);
+		GLShaderProgram(GLShaderCompiler& compiler)
+			: CompilerHandle(compiler)
+		{}
+
+		void Compile(const String& compute);
+		void Compile(const String& vertex, const String& fragment);
+		void Compile(const String& vertex, const String& geometry, const String& fragment);
 
 		void BindProgram() const;
 
@@ -69,12 +75,12 @@ namespace Poly
 
 		static GLenum GetEnumFromShaderUnitType(eShaderUnitType type);
 
-		void FetchIncludes(eShaderUnitType type);
 		void AnalyzeShaderCode(eShaderUnitType type);
 
 		std::map<String, UniformInfo> Uniforms;
 		std::map<String, OutputInfo> Outputs;
 		GLuint ProgramHandle;
+		GLShaderCompiler& CompilerHandle;
 		EnumArray<String, eShaderUnitType> ShaderCode;
 
 		String VertexProgramPath;

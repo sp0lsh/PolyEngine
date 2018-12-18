@@ -18,23 +18,27 @@ namespace Poly
 
 	REGISTER_ENUM_NAMES(eBlendingMode, "NONE", "OPAQUE", "TRANSLUCENT");
 
-	// class ENGINE_DLLEXPORT MaterialAsset : public RTTIBase
-	// {
-	// 	RTTI_DECLARE_TYPE_DERIVED(MaterialAsset, RTTIBase)
-	// 	{
-	// 		RTTI_PROPERTY(Blending,				"Blending",				RTTI::ePropertyFlag::NONE);
-	// 		RTTI_PROPERTY(VertexShaderPath,		"VertexShaderPath",		RTTI::ePropertyFlag::NONE);
-	// 		RTTI_PROPERTY(FrangmentShaderPath,	"FrangmentShaderPath",	RTTI::ePropertyFlag::NONE);
-	// 	}
-	// 
-	// 	MaterialAsset()
-	// 	{
-	// 	}
-	// 
-	// 	eBlendingMode Blending;
-	// 	String VertexShaderPath;
-	// 	String FrangmentShaderPath;
-	// };
+	class ENGINE_DLLEXPORT MaterialAsset : public RTTIBase
+	{
+		RTTI_DECLARE_TYPE_DERIVED(MaterialAsset, RTTIBase)
+		{
+			RTTI_PROPERTY(Blending,				"Blending",				RTTI::ePropertyFlag::NONE);
+			RTTI_PROPERTY(VertexShaderPath,		"VertexShaderPath",		RTTI::ePropertyFlag::NONE);
+			RTTI_PROPERTY(FrangmentShaderPath,	"FrangmentShaderPath",	RTTI::ePropertyFlag::NONE);
+		}
+	
+		MaterialAsset()
+		{
+		}
+	
+		eBlendingMode Blending;
+		String VertexShaderPath;
+		String FrangmentShaderPath;
+		std::map<String, String> Defines;
+		std::map<String, float> ScalarUniforms;
+		std::map<String, Vector> VectorUniforms;
+		std::map<String, Matrix> MatrixUniforms;
+	};
 
 	class ENGINE_DLLEXPORT ShaderResource : public ResourceBase
 	{
@@ -48,7 +52,7 @@ namespace Poly
 
 	private:
 		
-		// MaterialAsset DefaultMaterial;
+		MaterialAsset Material;
 		std::unique_ptr<IShaderDeviceProxy> ShaderProxy;
 	};
 }
